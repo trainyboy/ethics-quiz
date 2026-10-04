@@ -161,8 +161,8 @@ kbd{font-family:inherit;font-size:.75rem;border:1px solid var(--line);border-bot
 /* ======================= CROSS-DEVICE SYNC CONFIG =======================
    Paste your Supabase project URL and anon / publishable key here.
    Leave the placeholders as they are to run local-only (no sync UI).     */
-const SUPABASE_URL      = 'YOUR_SUPABASE_URL';       // e.g. 'https://abcdefghijklmnop.supabase.co'
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // legacy anon JWT (eyJ...) or sb_publishable_...
+const SUPABASE_URL      = 'https://jbbimrvqolmgxpxbgxqb.supabase.co';       // e.g. 'https://abcdefghijklmnop.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_icjF5LCzbbn7e0z6h93NrA_mYf-68Mv';  // legacy anon JWT (eyJ...) or sb_publishable_...
 /* ======================================================================== */
 (function(){
 'use strict';
@@ -485,6 +485,12 @@ function scheduleRetry(){
   Sync.retryTimer = setTimeout(() => { if (Sync.active()) pull(); }, Sync.retryDelay);
   Sync.retryDelay = Math.min(Sync.retryDelay * 2, 60000);
 }
+// Postgres timestamps can carry microseconds; round them UP to the next millisecond so a later
+// re-push of the same moment compares >= the stored value.
+function parseTs(v){
+  const ms = Date.parse(v); if (isNaN(ms)) return 0;
+  const m = /\.(\d+)/.exec(String(v)); return (m && m[1].length > 3 && /[1-9]/.test(m[1].slice(3))) ? ms + 1 : ms;
+}
 function adoptRemote(state, ts){
   Sync.note('adopt remote ' + ts);
   const f = fresh(); Object.keys(f).forEach(k => { if (state && k in state) f[k] = state[k]; });
@@ -507,7 +513,7 @@ async function pull(depth){
     const row = rows && rows[0];
     Sync.retryDelay = 5000;
     if (!row){ if (S.updatedAt > 0) await push(depth + 1); else setStatus('synced'); return; }
-    const remoteTs = Date.parse(row.updated_at), localTs = S.updatedAt || 0;
+    const remoteTs = parseTs(row.updated_at), localTs = S.updatedAt || 0;
     if (remoteTs > localTs) { adoptRemote(row.state, remoteTs); setStatus('synced'); }
     else if (localTs > remoteTs && depth < 3) await push(depth + 1);
     else setStatus('synced');
@@ -528,8 +534,8 @@ async function push(depth, opts){
       const row = rows && rows[0];
       Sync.retryDelay = 5000;
       if (row && row.applied === false){ Sync.inflight = null; if (depth < 3) await pull(depth + 1); return; }
-      if (row && row.updated_at){ const t = Date.parse(row.updated_at); if (S.updatedAt === sentTs && t !== sentTs){ S.updatedAt = t; persist(); } }
-      setStatus(S.updatedAt === sentTs || (row && Date.parse(row.updated_at) === S.updatedAt) ? 'synced' : 'syncing');
+      if (row && row.updated_at){ const t = parseTs(row.updated_at); if (S.updatedAt === sentTs && t !== sentTs){ S.updatedAt = t; persist(); } }
+      setStatus(S.updatedAt === sentTs || (row && parseTs(row.updated_at) === S.updatedAt) ? 'synced' : 'syncing');
     } catch(e){ onSyncError(e); }
     finally { Sync.inflight = null; }
   })();
@@ -556,7 +562,7 @@ async function connectCode(code){
   try { const rows = await rpc('get_progress', {p_code: code}); row = rows && rows[0]; }
   catch(e){ onSyncError(e); return {done:true}; }
   if (!row){ await push(); return {done:true}; }
-  if (!(S.updatedAt > 0)){ adoptRemote(row.state, Date.parse(row.updated_at)); setStatus('synced'); return {done:true}; }
+  if (!(S.updatedAt > 0)){ adoptRemote(row.state, parseTs(row.updated_at)); setStatus('synced'); return {done:true}; }
   return {conflict: row};
 }
 function openSync(){
@@ -587,8 +593,8 @@ function openSync(){
       if (res.conflict) draw(res.conflict); else { close(); toast(Sync.status === 'synced' ? 'Sync on: ' + code : 'Sync code saved'); }
     };
     $('#syncCodeIn').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('#syncSave').click(); } });
-    const uc = $('#useCloud'); if (uc) uc.onclick = () => { adoptRemote(conflictRow.state, Date.parse(conflictRow.updated_at)); setStatus('synced'); close(); toast('Loaded cloud progress'); };
-    const ul = $('#useLocal'); if (ul) ul.onclick = async () => { S.updatedAt = Math.max(Date.now(), Date.parse(conflictRow.updated_at) + 1); persist(); close(); await push(); toast('Uploaded this device\'s progress'); };
+    const uc = $('#useCloud'); if (uc) uc.onclick = () => { adoptRemote(conflictRow.state, parseTs(conflictRow.updated_at)); setStatus('synced'); close(); toast('Loaded cloud progress'); };
+    const ul = $('#useLocal'); if (ul) ul.onclick = async () => { S.updatedAt = Math.max(Date.now(), parseTs(conflictRow.updated_at) + 1); persist(); close(); await push(); toast('Uploaded this device\'s progress'); };
   };
   draw();
   $('#overlay').classList.add('show');
