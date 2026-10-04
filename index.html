@@ -470,7 +470,7 @@ function questionWidget(el, c, opts, onAnswer){
 // After an answer the app moves on by itself. Next / Enter / → skip the wait. Any re-render (set, tab, restart,
 // reset, sync) cancels it; it pauses while the tab is hidden, a modal is open, or the pointer/focus is on the
 // typed-answer row. Per-device setting (localStorage, not synced).
-const AUTO_NEXT_MS = {correct: 3000, wrong: 4500, typedWrong: 6000};   // <- tweak delays here
+const AUTO_NEXT_MS = {correct: 1500, wrong: 1500, typedWrong: 3000};   // <- tweak delays here
 const AUTO_KEY = 'ethicsQuiz.autoNext';
 const Auto = {on: true, active: false, token: 0, timer: null, total: 0, remaining: 0, startedAt: 0, fire: null, hold: new Set()};
 try { Auto.on = localStorage.getItem(AUTO_KEY) !== 'off'; } catch(e){}
