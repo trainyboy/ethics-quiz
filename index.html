@@ -59,6 +59,15 @@ header.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .letter{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:750;font-size:.85rem;background:var(--accent-soft);color:var(--accent)}
 .progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
 .progress > i{display:block;height:100%;background:var(--good)}
+.next-btn{position:relative;overflow:hidden}
+.next-btn .auto-fill{position:absolute;left:0;bottom:0;height:4px;width:0;background:rgba(255,255,255,.75);pointer-events:none}
+.next-btn[data-auto="paused"] .auto-fill{opacity:.45}
+.auto-toggle{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
+.auto-toggle input{appearance:none;-webkit-appearance:none;margin:0;position:relative;width:30px;height:17px;border-radius:99px;background:var(--line);cursor:pointer;flex:none;transition:background .15s}
+.auto-toggle input::before{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
+.auto-toggle input:checked{background:var(--accent)}
+.auto-toggle input:checked::before{left:15px}
+.auto-toggle input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .done-count{font-weight:700}
 .opts{display:flex;flex-direction:column;gap:10px;margin:16px 0}
@@ -382,6 +391,7 @@ function updateCount(){
   renderSidebar();
 }
 function render(){
+  autoCancel();
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
   $('#filterSel').value = cs().filter;
   updateCount();
@@ -456,6 +466,53 @@ function questionWidget(el, c, opts, onAnswer){
   };
 }
 
+// ---------- auto-advance ----------
+// After an answer the app moves on by itself. Next / Enter / → skip the wait. Any re-render (set, tab, restart,
+// reset, sync) cancels it; it pauses while the tab is hidden, a modal is open, or the pointer/focus is on the
+// typed-answer row. Per-device setting (localStorage, not synced).
+const AUTO_NEXT_MS = {correct: 3000, wrong: 4500, typedWrong: 6000};   // <- tweak delays here
+const AUTO_KEY = 'ethicsQuiz.autoNext';
+const Auto = {on: true, active: false, token: 0, timer: null, total: 0, remaining: 0, startedAt: 0, fire: null, hold: new Set()};
+try { Auto.on = localStorage.getItem(AUTO_KEY) !== 'off'; } catch(e){}
+function autoBlocked(){ return document.visibilityState === 'hidden' || $('#overlay').classList.contains('show') || Auto.hold.size > 0; }
+function autoPaint(running){
+  const nb = $('#nextBtn'); if (!nb) return;
+  const f = nb.querySelector('.auto-fill');
+  nb.dataset.auto = Auto.active ? (running ? 'running' : 'paused') : 'off';
+  if (!f) return;
+  const frac = Auto.active && Auto.total ? Math.min(1, 1 - Auto.remaining / Auto.total) : 0;
+  f.style.transition = 'none'; f.style.width = (frac * 100) + '%';
+  if (Auto.active && running){ void f.offsetWidth; f.style.transition = 'width ' + Math.round(Auto.remaining) + 'ms linear'; f.style.width = '100%'; }
+}
+function autoCancel(){ Auto.token++; clearTimeout(Auto.timer); Auto.timer = null; Auto.active = false; Auto.fire = null; Auto.hold.clear(); autoPaint(false); }
+function autoStart(ms, fire){
+  autoCancel();
+  if (!Auto.on) return;
+  Auto.active = true; Auto.total = Auto.remaining = ms; Auto.fire = fire;
+  autoUpdate();
+}
+function autoUpdate(){
+  if (!Auto.active) return;
+  const blocked = autoBlocked();
+  if (blocked && Auto.timer){
+    clearTimeout(Auto.timer); Auto.timer = null;
+    Auto.remaining = Math.max(0, Auto.remaining - (performance.now() - Auto.startedAt));
+    autoPaint(false);
+  } else if (!blocked && !Auto.timer){
+    Auto.startedAt = performance.now();
+    const tok = Auto.token;
+    Auto.timer = setTimeout(() => {
+      if (tok !== Auto.token || !Auto.active) return;
+      Auto.timer = null;
+      if (autoBlocked()){ Auto.remaining = 0; autoPaint(false); return; }   // never fire while blocked; resumes on unblock
+      const f = Auto.fire; autoCancel(); if (f) f();
+    }, Auto.remaining);
+    autoPaint(true);
+  }
+}
+document.addEventListener('visibilitychange', autoUpdate);
+new MutationObserver(autoUpdate).observe($('#overlay'), {attributes: true, attributeFilter: ['class']});
+
 // ---------- study round ----------
 // queue[0] is the current question. Correct → retired (never returns this round).
 // Wrong → re-inserted REQUEUE_GAP positions later.
@@ -478,11 +535,14 @@ function renderStudy(v){
   const pct = 100 * R.done.length / R.total;
   v.innerHTML = '<div class="panel" id="study"><div class="qhead"><span class="done-count" id="doneCount">' + R.done.length + ' / ' + R.total + ' done</span>' +
     '<span class="row"><span class="muted" style="font-size:.88rem" id="mistakes">' + R.wrong + ' mistake' + (R.wrong === 1 ? '' : 's') + ' · ' + R.queue.length + ' left</span>' +
+    '<label class="auto-toggle" title="Go to the next question automatically (' + AUTO_NEXT_MS.correct / 1000 + ' s after a right answer, ' + AUTO_NEXT_MS.wrong / 1000 + ' s after a wrong one)"><input type="checkbox" id="autoChk"' + (Auto.on ? ' checked' : '') + '>Auto-next</label>' +
     '<button class="btn small ghost" id="restartRound">Restart</button></span></div>' +
     '<div class="progress"><i id="progressBar" style="width:' + pct + '%"></i></div>' +
     '<div id="qbox" data-n="' + n + '"></div>' +
-    '<div class="row right" style="margin-top:14px"><button class="btn primary" id="nextBtn" style="display:none">Next →</button></div></div>' +
+    '<div class="row right" style="margin-top:14px"><button class="btn primary next-btn" id="nextBtn" style="display:none" data-auto="off"><span class="nb-label">Next →</span><span class="auto-fill" aria-hidden="true"></span></button></div></div>' +
     '<div class="kbd hide-sm">' + (isFill(c) ? '<kbd>Enter</kbd> check / next' : '<kbd>1</kbd>–<kbd>' + optIdx(c).length + '</kbd> or <kbd>A</kbd>–<kbd>' + L[optIdx(c).length - 1] + '</kbd> to answer · <kbd>Enter</kbd> check / next') + '</div>';
+  let advanced = false, pendingMs = 0;
+  const advance = () => { if (advanced) return; advanced = true; autoCancel(); render(); window.scrollTo({top:0}); };
   widget = questionWidget($('#qbox'), c, {again: R.wrongOnce.includes(n)}, (correct, d) => {
     if (d.override){
       // typed answer marked right after being graded wrong: undo the re-queue and retire it
@@ -511,9 +571,28 @@ function renderStudy(v){
     $('#doneCount').textContent = R.done.length + ' / ' + R.total + ' done';
     $('#progressBar').style.width = (100 * R.done.length / R.total) + '%';
     $('#mistakes').textContent = R.wrong + ' mistake' + (R.wrong === 1 ? '' : 's') + ' · ' + R.queue.length + ' left';
-    const nb = $('#nextBtn'); nb.textContent = R.queue.length ? 'Next →' : 'Finish →'; nb.style.display = ''; nb.focus({preventScroll:true});
+    const nb = $('#nextBtn'); nb.querySelector('.nb-label').textContent = R.queue.length ? 'Next →' : 'Finish →'; nb.style.display = ''; nb.focus({preventScroll:true});
+    // auto-advance: short wait after right, longer after wrong (more time to read the green option), longest for a wrong typed answer
+    const fbRow = !correct && !d.override ? $('#feedback') : null;
+    pendingMs = (correct || d.override) ? AUTO_NEXT_MS.correct : (fbRow ? AUTO_NEXT_MS.typedWrong : AUTO_NEXT_MS.wrong);
+    autoStart(pendingMs, advance);
+    if (fbRow){
+      const hold = (k, on) => { if (on) Auto.hold.add(k); else Auto.hold.delete(k); autoUpdate(); };
+      fbRow.addEventListener('mouseenter', () => hold('hover', true));
+      fbRow.addEventListener('mouseleave', () => hold('hover', false));
+      fbRow.addEventListener('focusin', () => hold('focus', true));
+      fbRow.addEventListener('focusout', () => hold('focus', false));
+    }
   });
-  $('#nextBtn').addEventListener('click', () => { render(); window.scrollTo({top:0}); });
+  $('#nextBtn').addEventListener('click', advance);
+  $('#autoChk').addEventListener('change', e => {
+    Auto.on = e.target.checked;
+    try { localStorage.setItem(AUTO_KEY, Auto.on ? 'on' : 'off'); } catch(err){}
+    const nb = $('#nextBtn');
+    if (!Auto.on) autoCancel();
+    else if (nb && nb.style.display !== 'none' && !advanced) autoStart(pendingMs || AUTO_NEXT_MS.correct, advance);
+    toast('Auto-next ' + (Auto.on ? 'on' : 'off'));
+  });
   $('#restartRound').addEventListener('click', () => { if (R.done.length === 0 || confirm('Restart this round? Progress in the current round will be cleared.')){ cs().study = null; touch(); render(); } });
 }
 function renderFinish(v){
@@ -552,6 +631,7 @@ function renderBrowse(v){
 
 // ---------- edit answer ----------
 function openEdit(c, after){
+  autoCancel();
   const m = $('#modal'), cur = ansSet(c), multiAllowed = !isTF(c);
   let body;
   if (isFill(c)) body = '<input class="fill-input" id="editFill" value="' + esc(ans(c)) + '">';
@@ -1151,7 +1231,7 @@ function buildCSV(){
   });
   return rows.map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
-window.__ethicsQuiz = {buildCSV, deck: DECK, state: () => S, serialize, migrate, parseCSV, importCSV, matchAnswer, simRatio, switchSet, addSet, last: null};
+window.__ethicsQuiz = {AUTO_NEXT_MS, auto: () => ({on: Auto.on, active: Auto.active, running: !!Auto.timer, remaining: Auto.remaining, token: Auto.token}), buildCSV, deck: DECK, state: () => S, serialize, migrate, parseCSV, importCSV, matchAnswer, simRatio, switchSet, addSet, last: null};
 $('#exportBtn').addEventListener('click', () => {
   const P = cs();
   const blob = new Blob(['\ufeff' + buildCSV()], {type:'text/csv;charset=utf-8'});
