@@ -139,12 +139,23 @@ kbd{font-family:inherit;font-size:.75rem;border:1px solid var(--line);border-bot
   .sync-btn{padding:9px 10px}
 }
 /* ---- sets sidebar ---- */
-.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;align-items:start}
+.layout{display:block}
 .maincol{min-width:0}
-.sidebar{position:sticky;top:12px;background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:4px;max-height:calc(100vh - 24px);overflow:auto}
+/* Sets panel: floats over the content (never takes layout space), anchored under the header's left edge. */
+header.top{position:relative}
+.sidebar{position:absolute;left:0;top:calc(100% + 6px);z-index:45;width:280px;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);overflow:auto;
+  display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:var(--radius);
+  background:var(--sb-bg);-webkit-backdrop-filter:blur(8px) saturate(1.3);backdrop-filter:blur(8px) saturate(1.3);
+  border:1px solid var(--sb-line);box-shadow:0 2px 6px rgba(20,22,40,.08),0 16px 40px rgba(20,22,40,.18);
+  opacity:0;visibility:hidden;margin-top:-8px;pointer-events:none;
+  transition:opacity .15s ease,margin-top .15s ease,visibility 0s linear .15s}
+.sidebar.open{opacity:1;visibility:visible;margin-top:0;pointer-events:auto;transition:opacity .15s ease,margin-top .15s ease,visibility 0s}
+:root{--sb-bg:rgba(255,255,255,.72);--sb-line:rgba(227,229,239,.9);--sb-hover:rgba(20,22,40,.06)}
+@media (prefers-color-scheme: dark){:root{--sb-bg:rgba(24,27,37,.70);--sb-line:rgba(60,66,86,.8);--sb-hover:rgba(255,255,255,.07)}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){:root{--sb-bg:rgba(255,255,255,.94)}@media (prefers-color-scheme: dark){:root{--sb-bg:rgba(24,27,37,.95)}}}
 .sidebar h4{margin:2px 6px 8px;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;align-items:center}
 .set-item{display:flex;align-items:center;gap:6px;border:1px solid transparent;border-radius:10px;padding:8px 8px 8px 10px;cursor:pointer}
-.set-item:hover{background:var(--bg)}
+.set-item:hover{background:var(--sb-hover)}
 .set-item.active{background:var(--accent-soft);border-color:var(--accent)}
 .set-item.active .set-name{color:var(--accent)}
 .set-name{flex:1;min-width:0;font-weight:600;font-size:.94rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;text-align:left;padding:0}
@@ -164,16 +175,8 @@ header.top .btn{white-space:nowrap;flex:none}
 button.brand{border:1px solid transparent;background:transparent;padding:4px 10px 4px 4px;margin-left:-5px;border-radius:14px;color:inherit;font:inherit;font-weight:750;font-size:1.15rem;cursor:pointer}
 button.brand:hover{background:var(--panel);border-color:var(--line);box-shadow:var(--shadow)}
 button.brand:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button.brand[aria-expanded="true"] .brand-glyph{color:var(--accent);background:var(--accent-soft)}
-.brand-glyph{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:.8rem;line-height:1;color:var(--muted);background:var(--line)}
-button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft)}
-@media (min-width:761px){
-  body.sb-collapsed .layout{grid-template-columns:minmax(0,1fr)}
-  body.sb-collapsed .sidebar{display:none}
-}
+button.brand[aria-expanded="true"]{background:var(--panel);border-color:var(--accent)}
 #brandName{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.drawer-backdrop{display:none}
-.drawer-only{display:none}
 .dropzone{border:2px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;margin:10px 0}
 .dropzone.drag{border-color:var(--accent);background:var(--accent-soft)}
 .import-ok{color:var(--good);font-weight:700}
@@ -187,7 +190,6 @@ button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft
 }
 @media (min-width:1280px){
   html{font-size:17px}
-  .layout{grid-template-columns:260px minmax(0,1fr);gap:24px}
   .panel{padding:26px 28px}
   .opts{gap:12px;margin:20px 0}
   .opt{padding:14px 18px;gap:14px}
@@ -200,7 +202,6 @@ button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft
 }
 @media (min-width:1600px){
   html{font-size:18px}
-  .layout{grid-template-columns:280px minmax(0,1fr);gap:28px}
   .panel{padding:30px 34px}
   .opt{padding:16px 20px}
   .qtext{font-size:1.3rem}
@@ -209,30 +210,25 @@ button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft
 @media (min-width:2200px){
   html{font-size:20px}
   .wrap{max-width:1900px}
-  .layout{grid-template-columns:310px minmax(0,1fr);gap:32px}
   .modal{max-width:760px}
 }
 @media (max-width:760px){
-  .layout{grid-template-columns:minmax(0,1fr)}
-  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(84vw,320px);max-height:none;border-radius:0 18px 18px 0;z-index:45;display:none;padding-top:16px}
-  .sidebar.open{display:flex}
+  .sidebar{width:min(85vw,320px)}
   .set-actions{display:flex}
-  .drawer-only{display:inline-block}
-  .drawer-backdrop.show{display:block;position:fixed;inset:0;background:rgba(10,12,25,.45);z-index:44}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <button class="brand" id="brandBtn" type="button" aria-controls="sidebar" aria-expanded="true" title="Show / hide sets"><span class="logo" aria-hidden="true">⚖︎</span><span class="brand-text"><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></span></button>
+    <button class="brand" id="brandBtn" type="button" aria-controls="sidebar" aria-expanded="false" title="Show sets"><span class="logo" aria-hidden="true">⚖︎</span><span class="brand-text"><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></span></button>
     <div class="spacer"></div>
     <button class="btn small sync-btn" id="syncBtn" hidden title="Cross-device sync"><span class="dot"></span><span id="syncLabel">Sync</span></button>
     <button class="btn small" id="exportBtn" title="Download this set as CSV (includes your edited answers)">⬇ <span class="hide-sm">Export</span> CSV</button>
     <button class="btn small ghost" id="resetBtn" title="Reset progress for this set">↺ <span class="hide-sm">Reset</span></button>
+    <aside class="sidebar" id="sidebar" aria-label="Question sets"></aside>
   </header>
   <div class="layout">
-    <aside class="sidebar" id="sidebar" aria-label="Question sets"></aside>
     <section class="maincol">
       <nav class="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="study">Study</button>
@@ -252,7 +248,6 @@ button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft
     </section>
   </div>
 </div>
-<div class="drawer-backdrop" id="backdrop"></div>
 <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="fileIn" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden>
@@ -474,7 +469,7 @@ const AUTO_NEXT_MS = {correct: 750, wrong: 750, typedWrong: 1500};   // <- tweak
 const AUTO_KEY = 'ethicsQuiz.autoNext';
 const Auto = {on: true, active: false, token: 0, timer: null, total: 0, remaining: 0, startedAt: 0, fire: null, hold: new Set()};
 try { Auto.on = localStorage.getItem(AUTO_KEY) !== 'off'; } catch(e){}
-function autoBlocked(){ return document.visibilityState === 'hidden' || $('#overlay').classList.contains('show') || Auto.hold.size > 0; }
+function autoBlocked(){ return document.visibilityState === 'hidden' || $('#overlay').classList.contains('show') || $('#sidebar').classList.contains('open') || Auto.hold.size > 0; }
 function autoPaint(running){
   const nb = $('#nextBtn'); if (!nb) return;
   const f = nb.querySelector('.auto-fill');
@@ -655,7 +650,7 @@ $('#overlay').addEventListener('click', e => { if (e.target.id === 'overlay') $(
 // ---------- sets sidebar ----------
 function renderSidebar(){
   const sb = $('#sidebar');
-  sb.innerHTML = '<h4>Sets<span class="spacer"></span><button class="icon-btn drawer-only" data-act="close" title="Close" aria-label="Close sets">✕</button></h4>' +
+  sb.innerHTML = '<h4>Sets<span class="spacer"></span><button class="icon-btn" data-act="close" title="Close" aria-label="Close sets">✕</button></h4>' +
     S.order.filter(id => S.sets[id]).map(id => {
       const s = S.sets[id], p = setProgress(s);
       return '<div class="set-item' + (id === S.active ? ' active' : '') + '" data-id="' + esc(id) + '" role="button" tabindex="0" title="' + esc(s.name) + '" aria-current="' + (id === S.active) + '">' +
@@ -665,28 +660,27 @@ function renderSidebar(){
     }).join('') +
     '<button class="btn small new-set" data-act="new" id="newSetBtn">＋ New set · Upload CSV</button><div class="side-hint hide-sm">or drop a .csv file anywhere</div>';
 }
-// Sidebar visibility: the header logo/title toggles it. Phones (<=760px) get a drawer; desktop collapses the column
-// (remembered per device in localStorage, not synced).
-const SIDEBAR_KEY = 'ethicsQuiz.sidebar';
+// Sets panel visibility: the header logo/title toggles a floating panel (no layout change at any width).
+// Closes on outside click/tap, Escape, or picking a set. Desktop remembers open/closed per device (not synced).
+const SIDEBAR_KEY = 'ethicsQuiz.setsPanel';
 const mqMobile = window.matchMedia('(max-width: 760px)');
-let sbCollapsed = false; try { sbCollapsed = localStorage.getItem(SIDEBAR_KEY) === 'closed'; } catch(e){}
-function sidebarShown(){ return mqMobile.matches ? $('#sidebar').classList.contains('open') : !sbCollapsed; }
-function syncBrandAria(){
-  const shown = sidebarShown(), b = $('#brandBtn');
-  b.setAttribute('aria-expanded', String(shown));
-  b.title = (shown ? 'Hide' : 'Show') + ' sets';
-
+function panelOpen(){ return $('#sidebar').classList.contains('open'); }
+function setPanel(open, remember){
+  $('#sidebar').classList.toggle('open', open);
+  const b = $('#brandBtn'); b.setAttribute('aria-expanded', String(open)); b.title = (open ? 'Hide' : 'Show') + ' sets';
+  if (remember !== false && !mqMobile.matches){ try { localStorage.setItem(SIDEBAR_KEY, open ? 'open' : 'closed'); } catch(e){} }
+  autoUpdate();   // auto-next pauses while the panel is open
 }
-function applyCollapsed(){ document.body.classList.toggle('sb-collapsed', sbCollapsed); syncBrandAria(); }
-function openDrawer(){ $('#sidebar').classList.add('open'); $('#backdrop').classList.add('show'); syncBrandAria(); }
-function closeDrawer(){ $('#sidebar').classList.remove('open'); $('#backdrop').classList.remove('show'); syncBrandAria(); }
-function toggleSidebar(){
-  if (mqMobile.matches) return $('#sidebar').classList.contains('open') ? closeDrawer() : openDrawer();
-  sbCollapsed = !sbCollapsed;
-  try { localStorage.setItem(SIDEBAR_KEY, sbCollapsed ? 'closed' : 'open'); } catch(e){}
-  applyCollapsed();
-}
-applyCollapsed();
+function openDrawer(){ setPanel(true); }
+function closeDrawer(){ if (panelOpen()) setPanel(false); }
+function toggleSidebar(){ setPanel(!panelOpen()); }
+// outside click/tap closes the panel; that click is swallowed so it can't also answer a question underneath
+document.addEventListener('click', e => {
+  if (!panelOpen()) return;
+  const t = e.target;
+  if (!t || !t.isConnected || t.closest('#sidebar, #brandBtn, #overlay, #toast')) return;
+  e.preventDefault(); e.stopPropagation(); closeDrawer();
+}, true);
 function switchSet(id){
   if (!S.sets[id]) return;
   closeDrawer();
@@ -719,7 +713,7 @@ $('#sidebar').addEventListener('click', e => {
   const actBtn = e.target.closest('[data-act]'), item = e.target.closest('.set-item');
   const act = actBtn && actBtn.dataset.act;
   if (act === 'close') return closeDrawer();
-  if (act === 'new'){ closeDrawer(); return openImport(); }
+  if (act === 'new') return openImport();
   if (!item) return;
   if (act === 'rename') return renameSet(item.dataset.id);
   if (act === 'delete') return deleteSet(item.dataset.id);
@@ -730,7 +724,6 @@ $('#sidebar').addEventListener('keydown', e => {
   if (item && e.target === item && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); switchSet(item.dataset.id); }
 });
 $('#brandBtn').addEventListener('click', toggleSidebar);
-$('#backdrop').addEventListener('click', closeDrawer);
 
 // ---------- CSV parsing ----------
 // RFC-4180 style: quoted fields with "" escapes, delimiters / CR / LF inside quotes, BOM, CRLF / CR / LF line ends.
@@ -941,7 +934,7 @@ function addSet(name, cardsArr){
     cards: cardsArr.map(c => ({n: c.n, q: c.q, c: c.c, a: c.a, type: c.type}))}, blankProgress());
   S.order.push(id);
   S.active = id; S.tab = 'study'; widget = null; browseQ = '';
-  touch(); render(); window.scrollTo({top:0});
+  closeDrawer(); touch(); render(); window.scrollTo({top:0});
   return id;
 }
 function stateKB(){ return Math.ceil(JSON.stringify(serialize()).length / 1024); }
@@ -1255,7 +1248,7 @@ $('#filterSel').addEventListener('change', e => {
 });
 document.addEventListener('keydown', e => {
   if ($('#overlay').classList.contains('show')){ if (e.key === 'Escape') $('#overlay').classList.remove('show'); return; }
-  if (e.key === 'Escape' && $('#sidebar').classList.contains('open')){ closeDrawer(); return; }
+  if ($('#sidebar').classList.contains('open')){ if (e.key === 'Escape'){ e.preventDefault(); closeDrawer(); } return; }   // study shortcuts are off while the panel covers the card
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
   if (e.target.closest && e.target.closest('#sidebar')) return;
@@ -1264,7 +1257,8 @@ document.addEventListener('keydown', e => {
   const nb = $('#nextBtn');
   if ((e.key === 'Enter' || e.key === 'ArrowRight') && nb && nb.style.display !== 'none' && document.activeElement !== nb){ e.preventDefault(); nb.click(); }
 });
-mqMobile.addEventListener('change', ev => { if (!ev.matches) closeDrawer(); else syncBrandAria(); });
+// start closed; on desktop restore the last open/closed choice
+try { if (!mqMobile.matches && localStorage.getItem(SIDEBAR_KEY) === 'open') setPanel(true, false); } catch(e){}
 setStatus(Sync.active() ? 'syncing' : 'off');
 render();
 initialSync();
