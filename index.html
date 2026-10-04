@@ -271,22 +271,18 @@ function questionWidget(el, c, opts, onAnswer){
       if (set.includes(l)){ b.classList.add('correct'); if (multi && !sel.has(l)) b.classList.add('missedopt'); } else if (sel.has(l)) b.classList.add('wrong'); });
     el.querySelectorAll('[data-w="check"],[data-w="dontknow"]').forEach(b => b.disabled = true);
     const fi = el.querySelector('#fillIn'); if (fi){ fi.disabled = true; fi.classList.add(correct ? 'correct' : 'wrong'); }
-    const showAns = !correct && (fill || multi);
-    fb.innerHTML = '<div class="feedback ' + (correct ? 'good' : 'bad') + '" id="feedback" data-correct="' + correct + '">' +
-      '<div class="row"><strong class="t">' + (correct ? '✓ Correct' : '✗ Wrong') + '</strong><span class="spacer"></span>' +
-      (fill && !correct && typed ? '<button class="btn small" data-w="override">I was right</button>' : '') +
-      '<button class="btn small ghost" data-w="edit">✎ Edit key</button></div>' +
-      (showAns ? '<div><b>Answer:</b> ' + esc(answerText(c)).replace(/\n/g, '<br>') + '</div>' : '') + '</div>';
-    fb.querySelector('[data-w="edit"]').addEventListener('click', () => openEdit(c, () => {
-      const n = fb.querySelector('#keyNote') || fb.querySelector('#feedback').appendChild(Object.assign(document.createElement('div'), {id:'keyNote', className:'muted'}));
-      n.textContent = 'Answer key now: ' + ans(c) + ' (applies from the next attempt).';
-    }));
-    const ov = fb.querySelector('[data-w="override"]');
-    if (ov) ov.addEventListener('click', () => {
-      ov.remove(); const f = fb.querySelector('#feedback'); f.className = 'feedback good'; f.dataset.correct = 'true';
-      f.querySelector('.t').textContent = '✓ Counted as correct'; if (fi){ fi.classList.remove('wrong'); fi.classList.add('correct'); }
-      onAnswer(true, {override:true});
-    });
+    // No feedback box: the green/red choices say it all. Only a wrong typed answer
+    // (no choices to color) shows the correct answer, plus the "I was right" override.
+    if (fill && !correct) {
+      fb.innerHTML = '<div class="feedback bad" id="feedback" data-correct="false"><div class="row">' +
+        '<div><b>Answer:</b> ' + esc(answerText(c)).replace(/\n/g, '<br>') + '</div><span class="spacer"></span>' +
+        (typed ? '<button class="btn small" data-w="override">I was right</button>' : '') + '</div></div>';
+      const ov = fb.querySelector('[data-w="override"]');
+      if (ov) ov.addEventListener('click', () => {
+        fb.innerHTML = ''; if (fi){ fi.classList.remove('wrong'); fi.classList.add('correct'); }
+        onAnswer(true, {override:true});
+      });
+    } else fb.innerHTML = '';
     onAnswer(correct, {});
   }
   el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
