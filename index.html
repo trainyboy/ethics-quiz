@@ -123,6 +123,10 @@ kbd{font-family:inherit;font-size:.75rem;border:1px solid var(--line);border-bot
   .opts.tf{flex-direction:column}
   header.top{gap:8px}
   .sync-btn #syncLabel{display:none}
+  button.brand{font-size:1.02rem;gap:8px;padding-right:6px}
+  button.brand .logo{width:30px;height:30px;font-size:16px}
+  #brandName{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2}
+  .brand small{font-size:.72rem}
   .sync-btn{padding:9px 10px}
 }
 /* ---- sets sidebar ---- */
@@ -146,9 +150,18 @@ kbd{font-family:inherit;font-size:.75rem;border:1px solid var(--line);border-bot
 .new-set{margin-top:8px;justify-content:center;border-style:dashed;width:100%}
 .side-hint{font-size:.74rem;color:var(--muted);text-align:center;margin-top:4px}
 .sidebar.drag{outline:2px dashed var(--accent);outline-offset:-4px}
-.sets-toggle{display:none}
 header.top .btn{white-space:nowrap;flex:none}
-.brand > div{min-width:0}
+.brand > .brand-text{min-width:0;display:block;text-align:left}
+button.brand{border:1px solid transparent;background:transparent;padding:4px 10px 4px 4px;margin-left:-5px;border-radius:14px;color:inherit;font:inherit;font-weight:750;font-size:1.15rem;cursor:pointer}
+button.brand:hover{background:var(--panel);border-color:var(--line);box-shadow:var(--shadow)}
+button.brand:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.brand[aria-expanded="true"] .brand-glyph{color:var(--accent);background:var(--accent-soft)}
+.brand-glyph{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:.8rem;line-height:1;color:var(--muted);background:var(--line)}
+button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft)}
+@media (min-width:761px){
+  body.sb-collapsed .layout{grid-template-columns:minmax(0,1fr)}
+  body.sb-collapsed .sidebar{display:none}
+}
 #brandName{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .drawer-backdrop{display:none}
 .drawer-only{display:none}
@@ -166,15 +179,13 @@ header.top .btn{white-space:nowrap;flex:none}
   .set-actions{display:flex}
   .drawer-only{display:inline-block}
   .drawer-backdrop.show{display:block;position:fixed;inset:0;background:rgba(10,12,25,.45);z-index:44}
-  .sets-toggle{display:flex;width:100%;margin-bottom:12px;justify-content:space-between;gap:10px}
-  .sets-toggle .tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><div class="logo">⚖︎</div><div><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></div></div>
+    <button class="brand" id="brandBtn" type="button" aria-controls="sidebar" aria-expanded="true" title="Show / hide sets"><span class="logo" aria-hidden="true">⚖︎</span><span class="brand-glyph" aria-hidden="true">☰</span><span class="brand-text"><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></span></button>
     <div class="spacer"></div>
     <button class="btn small sync-btn" id="syncBtn" hidden title="Cross-device sync"><span class="dot"></span><span id="syncLabel">Sync</span></button>
     <button class="btn small" id="exportBtn" title="Download this set as CSV (includes your edited answers)">⬇ <span class="hide-sm">Export</span> CSV</button>
@@ -183,7 +194,6 @@ header.top .btn{white-space:nowrap;flex:none}
   <div class="layout">
     <aside class="sidebar" id="sidebar" aria-label="Question sets"></aside>
     <section class="maincol">
-      <button class="btn sets-toggle" id="setsToggle" aria-controls="sidebar"><span class="tname">☰ <b id="toggleName"></b></span><span class="set-count" id="toggleCount"></span></button>
       <nav class="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="study">Study</button>
         <button class="tab" role="tab" data-tab="browse">Browse &amp; edit</button>
@@ -543,12 +553,29 @@ function renderSidebar(){
           '<button class="icon-btn danger" data-act="delete" title="Delete set" aria-label="Delete ' + esc(s.name) + '">🗑</button></span>') + '</div>';
     }).join('') +
     '<button class="btn small new-set" data-act="new" id="newSetBtn">＋ New set · Upload CSV</button><div class="side-hint hide-sm">or drop a .csv file anywhere</div>';
-  const P = cs(), pr = setProgress(P);
-  $('#toggleName').textContent = P.name;
-  $('#toggleCount').textContent = pr.done + '/' + pr.total;
 }
-function openDrawer(){ $('#sidebar').classList.add('open'); $('#backdrop').classList.add('show'); }
-function closeDrawer(){ $('#sidebar').classList.remove('open'); $('#backdrop').classList.remove('show'); }
+// Sidebar visibility: the header logo/title toggles it. Phones (<=760px) get a drawer; desktop collapses the column
+// (remembered per device in localStorage, not synced).
+const SIDEBAR_KEY = 'ethicsQuiz.sidebar';
+const mqMobile = window.matchMedia('(max-width: 760px)');
+let sbCollapsed = false; try { sbCollapsed = localStorage.getItem(SIDEBAR_KEY) === 'closed'; } catch(e){}
+function sidebarShown(){ return mqMobile.matches ? $('#sidebar').classList.contains('open') : !sbCollapsed; }
+function syncBrandAria(){
+  const shown = sidebarShown(), b = $('#brandBtn');
+  b.setAttribute('aria-expanded', String(shown));
+  b.title = (shown ? 'Hide' : 'Show') + ' sets';
+  $('.brand-glyph').textContent = mqMobile.matches ? '☰' : (shown ? '‹' : '☰');
+}
+function applyCollapsed(){ document.body.classList.toggle('sb-collapsed', sbCollapsed); syncBrandAria(); }
+function openDrawer(){ $('#sidebar').classList.add('open'); $('#backdrop').classList.add('show'); syncBrandAria(); }
+function closeDrawer(){ $('#sidebar').classList.remove('open'); $('#backdrop').classList.remove('show'); syncBrandAria(); }
+function toggleSidebar(){
+  if (mqMobile.matches) return $('#sidebar').classList.contains('open') ? closeDrawer() : openDrawer();
+  sbCollapsed = !sbCollapsed;
+  try { localStorage.setItem(SIDEBAR_KEY, sbCollapsed ? 'closed' : 'open'); } catch(e){}
+  applyCollapsed();
+}
+applyCollapsed();
 function switchSet(id){
   if (!S.sets[id]) return;
   closeDrawer();
@@ -591,7 +618,7 @@ $('#sidebar').addEventListener('keydown', e => {
   const item = e.target.closest('.set-item');
   if (item && e.target === item && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); switchSet(item.dataset.id); }
 });
-$('#setsToggle').addEventListener('click', () => $('#sidebar').classList.contains('open') ? closeDrawer() : openDrawer());
+$('#brandBtn').addEventListener('click', toggleSidebar);
 $('#backdrop').addEventListener('click', closeDrawer);
 
 // ---------- CSV parsing ----------
@@ -1126,7 +1153,7 @@ document.addEventListener('keydown', e => {
   const nb = $('#nextBtn');
   if ((e.key === 'Enter' || e.key === 'ArrowRight') && nb && nb.style.display !== 'none' && document.activeElement !== nb){ e.preventDefault(); nb.click(); }
 });
-window.matchMedia('(min-width: 761px)').addEventListener('change', ev => { if (ev.matches) closeDrawer(); });
+mqMobile.addEventListener('change', ev => { if (!ev.matches) closeDrawer(); else syncBrandAria(); });
 setStatus(Sync.active() ? 'syncing' : 'off');
 render();
 initialSync();
