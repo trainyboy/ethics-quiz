@@ -273,7 +273,7 @@ function questionWidget(el, c, opts, onAnswer){
     const fi = el.querySelector('#fillIn'); if (fi){ fi.disabled = true; fi.classList.add(correct ? 'correct' : 'wrong'); }
     const showAns = !correct && (fill || multi);
     fb.innerHTML = '<div class="feedback ' + (correct ? 'good' : 'bad') + '" id="feedback" data-correct="' + correct + '">' +
-      '<div class="row"><strong class="t">' + (correct ? '✓ Correct' : '✗ Wrong. This one will come back in a few questions.') + '</strong><span class="spacer"></span>' +
+      '<div class="row"><strong class="t">' + (correct ? '✓ Correct' : '✗ Wrong') + '</strong><span class="spacer"></span>' +
       (fill && !correct && typed ? '<button class="btn small" data-w="override">I was right</button>' : '') +
       '<button class="btn small ghost" data-w="edit">✎ Edit key</button></div>' +
       (showAns ? '<div><b>Answer:</b> ' + esc(answerText(c)).replace(/\n/g, '<br>') + '</div>' : '') + '</div>';
