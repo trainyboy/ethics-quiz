@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#4f46e5">
 <link rel="icon" href="data:,">
-<title>Computer Ethics Study Deck</title>
+<title>Computer Ethics · Study</title>
 <style>
 :root{
   --bg:#f5f6fb; --panel:#ffffff; --text:#1c1f2e; --muted:#6b7084; --line:#e3e5ef;
@@ -25,7 +25,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Aria
   line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
-.wrap{max-width:820px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
 header.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:1.15rem;letter-spacing:-.01em;min-width:0}
 .logo{flex:none;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#a855f7);display:grid;place-items:center;color:#fff;font-size:18px;box-shadow:var(--shadow)}
@@ -125,38 +125,90 @@ kbd{font-family:inherit;font-size:.75rem;border:1px solid var(--line);border-bot
   .sync-btn #syncLabel{display:none}
   .sync-btn{padding:9px 10px}
 }
+/* ---- sets sidebar ---- */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;align-items:start}
+.maincol{min-width:0}
+.sidebar{position:sticky;top:12px;background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:4px;max-height:calc(100vh - 24px);overflow:auto}
+.sidebar h4{margin:2px 6px 8px;font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;align-items:center}
+.set-item{display:flex;align-items:center;gap:6px;border:1px solid transparent;border-radius:10px;padding:8px 8px 8px 10px;cursor:pointer}
+.set-item:hover{background:var(--bg)}
+.set-item.active{background:var(--accent-soft);border-color:var(--accent)}
+.set-item.active .set-name{color:var(--accent)}
+.set-name{flex:1;min-width:0;font-weight:600;font-size:.94rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent;text-align:left;padding:0}
+.set-count{font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.set-actions{display:none;gap:0}
+.set-item.active .set-actions{display:flex}
+.icon-btn{border:0;background:transparent;padding:3px 5px;border-radius:7px;color:var(--muted);font-size:.85rem;line-height:1}
+.icon-btn:hover{background:var(--line);color:var(--text)}
+.icon-btn.danger:hover{background:var(--bad-soft);color:var(--bad)}
+.icon-btn.danger{filter:grayscale(1);opacity:.7}
+.icon-btn.danger:hover{filter:none;opacity:1}
+.new-set{margin-top:8px;justify-content:center;border-style:dashed;width:100%}
+.side-hint{font-size:.74rem;color:var(--muted);text-align:center;margin-top:4px}
+.sidebar.drag{outline:2px dashed var(--accent);outline-offset:-4px}
+.sets-toggle{display:none}
+header.top .btn{white-space:nowrap;flex:none}
+.brand > div{min-width:0}
+#brandName{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drawer-backdrop{display:none}
+.drawer-only{display:none}
+.dropzone{border:2px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;margin:10px 0}
+.dropzone.drag{border-color:var(--accent);background:var(--accent-soft)}
+.import-ok{color:var(--good);font-weight:700}
+.import-skip{color:var(--bad);font-weight:700}
+.skip-list{margin:6px 0 0;padding-left:18px;font-size:.86rem;max-height:160px;overflow:auto}
+.fmt-help{font-size:.82rem;color:var(--muted)}
+.fmt-help code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 4px}
+@media (max-width:760px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(84vw,320px);max-height:none;border-radius:0 18px 18px 0;z-index:45;display:none;padding-top:16px}
+  .sidebar.open{display:flex}
+  .set-actions{display:flex}
+  .drawer-only{display:inline-block}
+  .drawer-backdrop.show{display:block;position:fixed;inset:0;background:rgba(10,12,25,.45);z-index:44}
+  .sets-toggle{display:flex;width:100%;margin-bottom:12px;justify-content:space-between;gap:10px}
+  .sets-toggle .tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><div class="logo">⚖︎</div><div>Computer Ethics<small id="subtitle">Study deck</small></div></div>
+    <div class="brand"><div class="logo">⚖︎</div><div><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></div></div>
     <div class="spacer"></div>
     <button class="btn small sync-btn" id="syncBtn" hidden title="Cross-device sync"><span class="dot"></span><span id="syncLabel">Sync</span></button>
-    <button class="btn small" id="exportBtn" title="Download deck as CSV (includes your edited answers)">⬇ <span class="hide-sm">Export</span> CSV</button>
-    <button class="btn small ghost" id="resetBtn" title="Reset progress">↺ <span class="hide-sm">Reset</span></button>
+    <button class="btn small" id="exportBtn" title="Download this set as CSV (includes your edited answers)">⬇ <span class="hide-sm">Export</span> CSV</button>
+    <button class="btn small ghost" id="resetBtn" title="Reset progress for this set">↺ <span class="hide-sm">Reset</span></button>
   </header>
-  <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" data-tab="study">Study</button>
-    <button class="tab" role="tab" data-tab="browse">Browse &amp; edit</button>
-  </nav>
-  <div class="toolbar">
-    <label class="muted" for="filterSel" style="font-size:.9rem">Cards:</label>
-    <select class="select" id="filterSel">
-      <option value="all">All cards</option>
-      <option value="starred_missed">Starred / Missed</option>
-      <option value="starred">Starred only</option>
-      <option value="missed">Missed only</option>
-    </select>
-    <span class="count" id="filterCount"></span>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Question sets"></aside>
+    <section class="maincol">
+      <button class="btn sets-toggle" id="setsToggle" aria-controls="sidebar"><span class="tname">☰ <b id="toggleName"></b></span><span class="set-count" id="toggleCount"></span></button>
+      <nav class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="study">Study</button>
+        <button class="tab" role="tab" data-tab="browse">Browse &amp; edit</button>
+      </nav>
+      <div class="toolbar">
+        <label class="muted" for="filterSel" style="font-size:.9rem">Cards:</label>
+        <select class="select" id="filterSel">
+          <option value="all">All cards</option>
+          <option value="starred_missed">Starred / Missed</option>
+          <option value="starred">Starred only</option>
+          <option value="missed">Missed only</option>
+        </select>
+        <span class="count" id="filterCount"></span>
+      </div>
+      <main id="view"></main>
+    </section>
   </div>
-  <main id="view"></main>
 </div>
-
+<div class="drawer-backdrop" id="backdrop"></div>
 <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
+<input type="file" id="fileIn" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden>
 
 <script id="deck-data" type="application/json">[{"n": 1, "q": "In the video \"Digital Ethics and the Future of Humans in a Connected World\" by Gerd Leonhard, which of the following statements is the most correct?", "c": ["People work less because they are distracted by social media and mobile devices.", "Stephen Hawking states Artificial Intelligence is not our last and greatest invention.", "Technology has no ethics.", "Facebook has 100s of people creating the content for its news feed."], "a": "C", "at": "Technology has no ethics.", "type": "single"}, {"n": 2, "q": "In the video regarding the paper \"What is Computer Ethics\" by James Moore, which statement below is the most accurate?", "c": ["Computer ethics is about right and wrong behavior as defined by a person's religion.", "Computer ethics is about the social impact of computer technology and the ethical use of such technology.", "Computer ethics is about computer security.", "Computer ethics is about right and wrong behavior as defined by local laws."], "a": "B", "at": "Computer ethics is about the social impact of computer technology and the ethical use of such technology.", "type": "single"}, {"n": 3, "q": "In the video regarding the paper \"What is Computer Ethics\" by James Moore, which statement below is the most accurate?", "c": ["Computer technology has transformed our definition of traditional work as \"work\" is no longer something that happens at a specific time or specific place.", "Computer technology has made money more accessible, but has not redefined what money is.", "Executives that work from home gain spontaneous interaction with colleagues because of handheld devices.", "Computer technology is rigid, fixed, and not mealleable, which leads to abuse of the user."], "a": "A", "at": "Computer technology has transformed our definition of traditional work as \"work\" is no longer something that happens at a specific time or specific place.", "type": "single"}, {"n": 4, "q": "In the video regarding the paper \"Computer Ethics: Basic Concepts and Historical Overview\" by Terrell Ward Bynum, which statement below is the most accurate?", "c": ["The field of Computer Ethics began after the first recorded network intrusion at the Flagger Dog Track in the state of Floida (USA).", "The field of Computer Ethics is partially a response to the development of an antiaircraft cannon capable of shooting down fast warplanes.", "Unlinke the Industrial Revolution, computer technology is not transforming society.", "Computer technology has made money more accessible, but has not redefined what money is."], "a": "B", "at": "The field of Computer Ethics is partially a response to the development of an antiaircraft cannon capable of shooting down fast warplanes.", "type": "single"}, {"n": 5, "q": "In the video regarding the paper \"Computer Ethics: Basic Concepts and Historical Overview\" by Terrell Ward Bynum, which statement below is the most accurate?", "c": ["In the long run, computer technology will eliminate more jobs than it creates.", "According to US law, it not is possible for a person to own a patent on a computer algorithm and prevent others from using it.", "Although it is possible to own the source code, object code (machine language), and algorithm assosciated with a computer program, it is not possible to own the \"look and feel\" of a program.", "Computer technology may cause \"de-skilling\" by replacing human skill with computer technology."], "a": "D", "at": "Computer technology may cause \"de-skilling\" by replacing human skill with computer technology.", "type": "single"}, {"n": 6, "q": "In the video \"Ethics in the Age of Technology\" by Juan Enriquez, which of the following statements is the most correct?", "c": ["Doctor J. Marion Sims is regarded as one of the first Doctors to suggest slavery is unethical and should be abolished.", "Defining who teaches us ethics is difficult because sometimes our traditional sources of guidance like holy books, parents, religious leaders, teachers, lawyers, doctors, and the government provide incorrect information.", "Lawyer Thomas Cooper, in his \"1826 pamphlets,\" is regarded as one the first Lawyers to suggest slavery is unethical.", "Baptist Pastor Richard Furman is regarded as one of the first religious leaders to speak out about the abolishment of slavery."], "a": "B", "at": "Defining who teaches us ethics is difficult because sometimes our traditional sources of guidance like holy books, parents, religious leaders, teachers, lawyers, doctors, and the government provide incorrect information.", "type": "single"}, {"n": 7, "q": "In the video regarding the paper \"Interaction Between Ethics and Technology\" by Shakib and Layton, which statement below is the most correct?", "c": ["Although there is universal agreement regarding what actions are right and wrong, engaging in correct action is still difficult.", "Consumers are having an impact on businesses by supporting those businesses that they believe are morally sound, and thereby making it more difficult for an unethical business to survive.", "Consumers are not affecting businesses because ethical and non-ethical businesses are supported in equal amounts.", "An action is utilitarian if it benefits the least number of people."], "a": "B", "at": "Consumers are having an impact on businesses by supporting those businesses that they believe are morally sound, and thereby making it more difficult for an unethical business to survive.", "type": "single"}, {"n": 8, "q": "In the video regarding the paper \"Interaction Between Ethics and Technology\" by Shakib and Layton, which statement below is the most accurate?", "c": ["There is no universal ethics.", "Walter Maner argues that computer technology does not create novel, ethical issues.", "Because we can test software and prove it is error free, we should spend more time on sofwtare testing.", "There is no need for Computer Ethics education as an understanding of ethics is universal."], "a": "A", "at": "There is no universal ethics.", "type": "single"}, {"n": 9, "q": "In the video regarding the paper \"Multimedia, Cyberspace, and Ethics\" by Jefferies, which statement below is the most accurate?", "c": ["It is not easy to regulate the Internet because it is a global network without any boundaries.", "Computer technology enhances our privacy.", "Cameras used to support surveillance in public locations are not considered to violate a person's privacy because no one expects privacy in a public space.", "The new generation that is born into a culture that uses the Internet (unlike the older generation that has not always had the Internet) is aware of the privacy they are giving up by using this public domain."], "a": "A", "at": "It is not easy to regulate the Internet because it is a global network without any boundaries.", "type": "single"}, {"n": 10, "q": "In the video regarding the paper \"Multimedia, Cyberspace, and Ethics\" by Jefferies, which statement below is the most accurate?", "c": ["Deep Fake technology creates an ethical issue by allowing a victim's appearance to be faked in a video, appearing to be doing whatever the Deep Fake developer wants.", "Bill Gates stated he felt a personal responsibility to build an Internet that is ethical.", "Deep Fake technology allows one to fake one's fingerprints and frame someone for a crime they did not commit.", "The Internet is a major contribution to cultural diversity."], "a": "A", "at": "Deep Fake technology creates an ethical issue by allowing a victim's appearance to be faked in a video, appearing to be doing whatever the Deep Fake developer wants.", "type": "single"}, {"n": 11, "q": "In the video \"The Social Dilemma of Driverless Cars\" by Iyad Rahwan, what was the suggestion provided by a blogger?", "c": ["Cars should be equipped with a \"people catcher\" (like a \"cow catcher\" on the front of trains) that push people gently out of the way when the driver loses control of the car.", "The driver of the car should push an eject button just before impact to avoid being killed in a car accident.", "Cars should be made out of soft spongy material (the \"Nurf car\") to help reduce deaths in the case of accidents.", "All drivers should wear helmets and other safety gear to help them survive what would normally be a deadly crash."], "a": "B", "at": "The driver of the car should push an eject button just before impact to avoid being killed in a car accident.", "type": "single"}, {"n": 12, "q": "In the video regarding the paper \"The Ethics of Driverless Cars\" by Neil McBride, what is meant by an \"iron cage\"?", "c": ["The \"iron cage\" is another name for a driverless car in that it is made of iron, but has no one in it.", "The \"iron cage\" is technology that has constrained us.", "The \"iron cage\" is the place people should be to keep them safe from driverless cars.", "The \"iron cage\" is a modification to the car that makes it safe."], "a": "B", "at": "The \"iron cage\" is technology that has constrained us.", "type": "single"}, {"n": 13, "q": "In the video regarding the paper \"The Ethics of Driverless Cars\" by Neil McBride, what is suggested in the conclusion?", "c": ["We need to perfect the technology regarding driverless cars so less people are injured.", "Driverless cars allow the passenger to have more free time to pursue other activities.", "Driverless cars are essential for allowing the human spirit to be free.", "We need a car that provides more information to the user so the user can be a better driver."], "a": "D", "at": "We need a car that provides more information to the user so the user can be a better driver.", "type": "single"}, {"n": 14, "q": "In the video regarding the paper \"Automated Detect and Avoid\" by Erik Theunissen and others, which of the following statements is the most correct?", "c": ["An ethical issue arises because writing code involves a degree of premeditation regarding how a robot car will act.", "Algorithm developers and programmers are forgiven for accidents because everyone knows computer code is imperfect.", "We should code human behavior because human situations are simple and easy to program.", "When a human acts without deliberation, they are ethically responsible to the same degree as a programmer making premeditated decisions for a robot car."], "a": "A", "at": "An ethical issue arises because writing code involves a degree of premeditation regarding how a robot car will act.", "type": "single"}, {"n": 15, "q": "In the video regarding the paper \"Automated Detect and Avoid\" by Erik Theunissen and others, which of the following statements is the most correct?", "c": ["When it comes to programming automated detect and avoid algorithms, it is best to replace all human judgment with algorithms as algorithms can be perfected to respond correctly in all situations.", "When it comes to programming automated detect and avoid algorithms, human values and judgments do not become part of the code.", "Current data does not support the claim that self-driving cars have resulted in a reduction in the number of accidents.", "Current data supports the claim that self-driving cars have resulted in a reduction in the number of accidents."], "a": "C", "at": "Current data does not support the claim that self-driving cars have resulted in a reduction in the number of accidents.", "type": "single"}, {"n": 16, "q": "According to Juan Enriquez in his book \"Right Wrong: How Technology Transforms our Ethics\" (see the PowerPoint slides provided with the course material), ethics does not change over time.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 17, "q": "According to Juan Enriquez in his book \"Right Wrong: How Technology Transforms our Ethics\" (see the PowerPoint slides provided with the course material), ethics changes our technology.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 18, "q": "According to Juan Enriquez in his book \"Right Wrong: How Technology Transforms our Ethics\" (see the PowerPoint slides provided with the course material), it pays to be humble about the past, as we too will be judged by the future.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 19, "q": "According to the video regarding \"Computer Technology is Like the Gift of Fire,\" computer technology is like fire in that if it is not managed appropriately, it can get out of control and hurt many people.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 20, "q": "According to the course Syllabus, students are expected to be quiet and not participate in discussions during class.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 21, "q": "In the video regarding \"Woman Injured by a Garage Door,\" which direction is the garage door closing?", "c": ["The garage door closes from the top down.", "The garage door closes from left and right at the same time.", "The garage door closes from left to right.", "The garage door closes from right to left."], "a": "C", "at": "The garage door closes from left to right.", "type": "single"}, {"n": 22, "q": "In the video regarding the paper \"Ethics and Safety of Computer Systems,\" which of the following statements is the most correct?", "c": ["The main issue is regarding the proper use of critical systems by the non-computer scientist.", "The main issue is regarding the responsibility for computer failures in critical systems.", "Because the 'Computer Medical Assistant' is error free, medical personnel are unethical if they do not follow the suggestion provided by this service.", "Proving computer systems are correct is easy and therefore we should always prove them correct before allowing the public to use them."], "a": "B", "at": "The main issue is regarding the responsibility for computer failures in critical systems.", "type": "single"}, {"n": 23, "q": "In the video regarding the paper \"Ethics and Safety of Computer Systems,\" which of the following statements is the most correct?", "c": ["A point was made that maybe Computer Scientists should take an oath to 'do no harm.'", "A point was made that it is easy for people to not use technology.", "People use technology that is \"unjustifiably risky\" because they have sufficient knowledge of how risky technology is.", "Computer professionals do not ignore important human issues when designing and implementing computer technology."], "a": "A", "at": "A point was made that maybe Computer Scientists should take an oath to 'do no harm.", "type": "single"}, {"n": 24, "q": "In the video regarding the paper \"When Formal Systems Kill,\" what is a \"formal system\"?", "c": ["A formal system requires less time, less money, and less complexity to verify it is correct.", "A formal system uses a grammar for encoding logic and states such that a given conclusion follows from a given premise.", "A formal system is computer code that cannot be proven correct.", "A formal system is one that is proven correct through testing."], "a": "B", "at": "A formal system uses a grammar for encoding logic and states such that a given conclusion follows from a given premise.", "type": "single"}, {"n": 25, "q": "In the video regarding the paper \"When Formal Systems Kill,\" which of the following statements is the most correct?", "c": ["Modeling complex systems is challenging and prevents us from using a formal method to prove they are correct.", "Modeling complex systems is easy and therefore every system can be proven correct or incorrect.", "Computational fluid dynamics (CFD) is not a good analogy for a formal method because CFD involves testing in a wind tunnel.", "Computational fluid dynamics (CFD) is not a good analogy for a formal method because CFD involves mechanical engineering."], "a": "A", "at": "Modeling complex systems is challenging and prevents us from using a formal method to prove they are correct.", "type": "single"}, {"n": 26, "q": "In the video \"Voice Recognition Software in 'Hello Barbie' Doll Concerns Parents Privacy Groups,\" what 'old information' did the doll suggest about the person playing with the doll?", "c": ["The doll suggested the person might be \"single mother.\"", "The doll suggested the person might be a \"teacher.\"", "The doll suggested the person might be a \"dancing polititian.\"", "The doll suggested the person might be a \"young girl.\""], "a": "C", "at": "The doll suggested the person might be a \"dancing polititian.\"", "type": "single"}, {"n": 27, "q": "In the video regarding the paper \"Can and Should Hello Barbie Keep a Secret\" by Meg Jones and Kevin Meurer, who maintains the recorded conversations of the child?", "c": ["Mattel (the manufacturer).", "The parents of the child.", "A 3rd party vendor.", "The person that purchased the doll."], "a": "C", "at": "A 3rd party vendor.", "type": "single"}, {"n": 28, "q": "In the video regarding the paper \"Can and Should Hello Barbie Keep a Secret\" by Meg Jones and Kevin Meurer\", what is suggested in the conclusion?", "c": ["Purchasers of \"Hello Barbie\" fully understand the risks when they buy this product and are therefore responsible for the abuse of children.", "When programming algorithms, human values and judgements should not become part of the code.", "Hello Barbie has been demonstrated to help children get better grades in school.", "The tendency to share a child's personal data among 'big data' collectors has the potential to negatively impact a child's ability to trust others."], "a": "D", "at": "The tendency to share a child's personal data among 'big data' collectors has the potential to negatively impact a child's ability to trust others.", "type": "single"}, {"n": 29, "q": "In the video regarding the paper \"Privacy and Ethical Concerns in Internet Security\" by Rebecca and James Rutherfoord, what is meant by an 'extrinsic loss of freedom'?", "c": ["An extrinsic loss of freedom is when a person changes their behavior because they think they are being watched.", "An extrinisic loss of freedom is when a person's behavior is controlled by another person.", "An extrinsic loss of freedom occurs when a person voluntarily gives someone permission to collect data about themself.", "An extrinsic loss of freedom is when a person chooses to have solitude."], "a": "B", "at": "An extrinisic loss of freedom is when a person's behavior is controlled by another person.", "type": "single"}, {"n": 30, "q": "In the video regarding the paper \"Privacy and Ethical Concerns in Internet Security\" by Rebecca and James Rutherfoord, which of the following statements is the most correct?", "c": ["The best way to ensure privacy in a world of changing technology is to write laws that all countries follow.", "There are many ways to define privacy including solitude, maintaining control over personal data, and the right to not being monitored.", "When it comes to privacy issues regarding ones data, there is no concern regarding the accuracy of the data that is made public.", "When it comes to privacy issues regarding ones data, there is no concern regarding stolen identity."], "a": "B", "at": "There are many ways to define privacy including solitude, maintaining control over personal data, and the right to not being monitored.", "type": "single"}, {"n": 31, "q": "Regarding the paper (and maybe found in the associated video) \"Ethics and Safety of Computer Systems\" by Michael C. McFarland, which of the following statements is the most correct?", "c": ["Normative ethics recognizes that values and choices are expressed in individual actions, and are emobodied effectively in social structure.", "Normative ethics asks what social structures are needed to support values such as justice and respect for human life and dignity.", "Normative ethics seeks to develop and justify rules for right conduct.", "Normative ethics asks what kind of person does the right thing."], "a": "C", "at": "Normative ethics seeks to develop and justify rules for right conduct.", "type": "single"}, {"n": 32, "q": "Regarding the paper (and maybe found in the associated video) \"Ethics and Safety of Computer Systems\" by Michael C. McFarland, which of the following statements is the most correct?", "c": ["Ethics of virtue asks what social structures are needed to support values such as justice and respect for human life and dignity.", "Ethics of virtue seeks to develop and justify rules for right conduct.", "Ethics of virtue recognizes that values and choices are expressed in individual actions, and are emobodied effectively in social structure.", "Ethics of virtue asks what kind of person does the right thing."], "a": "D", "at": "Ethics of virtue asks what kind of person does the right thing.", "type": "single"}, {"n": 33, "q": "Regarding the paper (and maybe found in the associated video) \"Ethics and Safety of Computer Systems\" by Michael C. McFarland, which of the following statements is the most correct?", "c": ["Social ethics asks what kind of person does the right thing.", "Social ethics seeks to develop and justify rules for right conduct.", "Social ethics seeks to foster and promote knowledge.", "Social ethics asks what social structures are needed to support values such as justice and respect for human life and dignity."], "a": "D", "at": "Social ethics asks what social structures are needed to support values such as justice and respect for human life and dignity.", "type": "single"}, {"n": 34, "q": "Regarding the paper (and maybe found in the associated video) \"When Formal Systems Kill\" by Darren Abramson and others, what are the challenges to formal methods? Select all that apply.", "c": ["How to automate methematical proofs.", "Computer code cannot be proven correct.", "How to mathematically model formal systems and their environments.", "How to mechanically check the correctness of mathematical proofs."], "a": "A,C,D", "at": "1) How to automate methematical proofs.\n3) How to mathematically model formal systems and their environments.\n4) How to mechanically check the correctness of mathematical proofs.", "type": "multi"}, {"n": 35, "q": "Regarding the paper (and maybe found in the associated video) \"When Formal Systems Kill\" by Darren Abramson and others, one of the points being made is both proof and testing are needed to support good software code.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 36, "q": "In the paper (and maybe found in the associated video) \"Can and Should Hello Barbie Keep a Secret\" by Meg Jones and Kevin Meurer\", parents are given the perception of complete control over the stored conversations, yet their child's data has the potential to be shared with numerous third parties.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 37, "q": "In the paper (and maybe found in the associated video) \"Can and Should Hello Barbie Keep a Secret\" by Meg Jones and Kevin Meurer\", in order for Hello Barbie to retain the trust of parents, ToyTalk could make a clearer commitment to withholding individual data from third parties or offer an opt-in system for parental monitoring", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 38, "q": "In the paper (and maybe found in the associated video) \"Privacy and Ethical Concerns in Internet Security\" by Rebecca and James Rutherfoord, virtual connections make it feel like people are near us.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 39, "q": "In the paper (and maybe found in the associated video) \"Privacy and Ethical Concerns in Internet Security\" by Rebecca and James Rutherfoord, an intrinsic loss of freedom comes about when people behave in a different manner when they are being monitored, watched or spied upon.\"", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 40, "q": "In the paper (and maybe found in the associated video) \"Privacy and Ethical Concerns in Internet Security\" by Rebecca and James Rutherfoord, what does Durlak include in his list of basic rights regarding privacy? Select all that apply.", "c": ["iron cage", "intimacy", "reserve", "solitude"], "a": "B,C,D", "at": "B) intimacy\nC) reserve\nD) solitude", "type": "multi"}, {"n": 41, "q": "In the video \"What FACEBOOK and GOOGLE are Hiding from the World - the Filter Bubble,\" according to the speaker, what did Mark Zuckerberg say might be \"more relevant to your interests right now than people dying in Africa\"?", "c": ["The happiness and status of one's own family.", "Information about one's favorite musical artist.", "The happiness and status of one's own friends.", "A squirrel dying in your front yard."], "a": "D", "at": "A squirrel dying in your front yard.", "type": "single"}, {"n": 42, "q": "In the video \"What FACEBOOK and GOOGLE are Hiding from the World - the Filter Bubble,\" which of the following statements is the most correct?", "c": ["Google buys Facebook data to customize the research results provided to Google users.", "Facebook buys Google search results to customize Facebook news items for the Facebook user.", "Google is filtering search content based on a user's profile and returning to a user results that are tailored to them.", "Google is filtering news content based on what Google want's the user to see and therefore hiding the truth."], "a": "C", "at": "Google is filtering search content based on a user's profile and returning to a user results that are tailored to them.", "type": "single"}, {"n": 43, "q": "In the video regarding \"Cyberethics - Morality and Law in Cyberspace - Chapter 4 - Intellectual Property in Cyberspace,\" which of the following statements is the most correct?", "c": ["A dance and a video of a dance can both be copyrighted.", "A video of a dance cannot be copyrighted.", "A dance can be copyrighted.", "A copyright gives an author exclusive rights to their works."], "a": "D", "at": "A copyright gives an author exclusive rights to their works.", "type": "single"}, {"n": 44, "q": "In the video regarding \"Cyberethics - Morality and Law in Cyberspace - Chapter 4 - Intellectual Property in Cyberspace,\" what was the issue regarding Expedia and Priceline?", "c": ["Priceline sued Expedia for infringing on its logo which includes an aircraft in a blue circle.", "Expedia sued Priceline for selling discount travel services to the public.", "Expedia sued Priceline for infringing on its pricing algorithm for air travel.", "Priceline sued Expedia for copying the method of allowing the customer to name the price for a hotel room."], "a": "D", "at": "Priceline sued Expedia for copying the method of allowing the customer to name the price for a hotel room.", "type": "single"}, {"n": 45, "q": "In the video regarding \"Intellectual Property and the Process of Invention: Why Software is Different\" by Robert Plotkin, why is software special?", "c": ["Software is special because it can be patented, but not copyrighted.", "Software is special because all software is in the public domain and cannot by copyrighted.", "Software is special because it can be protected by both patent and a copyright.", "Software is special because it can be copyrighted, but not patented."], "a": "C", "at": "Software is special because it can be protected by both patent and a copyright.", "type": "single"}, {"n": 46, "q": "Intellectual property consists of original musical compositions, poems, novels, inventions, and product formulas.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 47, "q": "The U.S. Constitution confers upon congress the power to promote the progress of science and the useful arts, by securing for limited time to authors and inventors the exclusive rights to their respective writings and discoveries.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 48, "q": "A dance such as the Tango can be copyrighted.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 49, "q": "The first sale provision allows the first purchaser of a copyrighted work to sell or lend that copy to someone else without the copyright holder's permission.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 50, "q": "A trademark is a word, phrase, or symbol that identifies a product or service.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 51, "q": "____ occurs when a trademark is used by someone else in connection with the sale of its goods or services.", "c": ["", "", "", ""], "a": "Infringement", "at": "Infringement", "type": "fill"}, {"n": 52, "q": "_____ occurs when the trademark is associated with dissimilar products - for example, using the Disney trademark name to sell suits for men.", "c": ["", "", "", ""], "a": "Blurring", "at": "Blurring", "type": "fill"}, {"n": 53, "q": "Through financial incentives intellectual property rights induce creators to develop works they would not otherwise produce without this protection, and this contributes to the general good of society.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 54, "q": "In the video regarding \"How Data Brokers Sold my Identity,\" what happened when Massachusetts Governor William Weld approved the release of 135,000 medical records of state employees with the names and social security numbers redacted?", "c": ["Professor Sweeney sent the Governor his medical records as a demonstration that the Governor could be identified by cross-referencing his medical records with public voter registration data.", "The Governor demonstrated that without a name or Social Security Number, medical records cannot be associated with a person.", "A health-care provider recognized the Governor's medical records and sent them to the Governor.", "The union representing the state employees sued the Governor for violating privacy laws."], "a": "A", "at": "Professor Sweeney sent the Governor his medical records as a demonstration that the Governor could be identified by cross-referencing his medical records with public voter registration data.", "type": "single"}, {"n": 55, "q": "In the video regarding the paper \"Choosing Passwords: Security and Human Factors\" by Edward Gehringer, what does the author suggest?", "c": ["The author suggests users should change their passwords frequently.", "The author suggests users should use a \"password wallet\" to store all of their passwords.", "The author suggests users should have one password and not many.", "The author suggests passwords should be in different formats, for different devices."], "a": "C", "at": "The author suggests users should have one password and not many.", "type": "single"}, {"n": 56, "q": "In the video regarding the paper \"Choosing Passwords: Security and Human Factors\" by Edward Gehringer, what does the author suggest?", "c": ["The author suggests passwords should be of an unlimited length.", "The author suggests more complex rules are needed to control the generation of secure passwords.", "The author suggests Microsoft Passport is the best solution for maintaining secure passwords.", "The author suggests computer systems should restrict password formats to make programming more convenient."], "a": "A", "at": "The author suggests passwords should be of an unlimited length.", "type": "single"}, {"n": 57, "q": "In the video regarding \"The Ethics of Collecting Data\" with Marie Wallace, what does the speaker suggest?", "c": ["The speaker suggests users should not give up personal data to support product marketing.", "The speaker suggests we can put an end to big data collection and we should.", "The speaker suggests users should be paid for giving up personal data.", "The speaker suggests social media can raise your concern about your own body issues and then exposed you to diet products to generate sales."], "a": "D", "at": "The speaker suggests social media can raise your concern about your own body issues and then exposed you to diet products to generate sales.", "type": "single"}, {"n": 58, "q": "In the video regarding \"The Ethics of Collecting Data\" with Marie Wallace, what does the speaker suggest?", "c": ["The speaker suggests 'big data' collection cannot be done in a transparent way such that customers voluntarily give up their data.", "The speaker suggests we should enact laws immediately to stop personal data collection because it will be considerably worse for the next generations.", "The speaker suggests transparency can exist in personal data collection by businesses and customers voluntarily give up their data.", "The speaker suggests there is no way to embrace personal privacy while also supporting personal data collection by businesses."], "a": "C", "at": "The speaker suggests transparency can exist in personal data collection by businesses and customers voluntarily give up their data.", "type": "single"}, {"n": 59, "q": "In an environment where a user has numerous accounts with different passwords, a lockout is a powerful incentive to write down a list of those passwords rather than guess at them when trying to log in.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 60, "q": "According to \"Choosing Passwords: Security and Human Factors\" by Edward Gehringer, password wallets are a good option for password security.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 61, "q": "According to \"Choosing Passwords: Security and Human Factors\" by Edward Gehringer, which of the following does he suggest are the role of the computer scientist? Select all that apply.", "c": ["Reduce lockouts", "Make password management easier for the user", "Allow a user to have much longer passwords, of a universal format", "Modify the lifetime limits"], "a": "A,B,C,D", "at": "A) Reduce lockouts\nB) Make password management easier for the user\nC) Allow a user to have much longer passwords, of a universal format\nD) Modify the lifetime limits", "type": "multi"}, {"n": 62, "q": "Maintaining password security involves striking a delicate balance between having enough rules to maintain good security and not having so many that users will take evasive action that compromises security.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 63, "q": "In the video regarding \"Hacker Tactics Tools - Become a Hacker - Hacking Made Easy,\" what does a \"Wifi Pineapple' allow the user to do?", "c": ["Encrypt a user's message to protect it from hacking.", "Hack everyone on the same network.", "Goelocate each user connected to the same network.", "Conduct penetration testing on a network."], "a": "B", "at": "Hack everyone on the same network.", "type": "single"}, {"n": 64, "q": "In the video regarding the paper \"Bias in Computer Systems\" by Friedman and Nissenbaum, what is the bias found in some airline ticketing systems?", "c": ["Some airline ticketing systems always recommend a higher priced ticket for every customer.", "Some airline ticketing systems advertise inexpensive flights, but then change more than advertised.", "Some airline ticketing systems charge customers more if their IP address geolocates them to a wealthy part of the world.", "Some airline ticketing systems do not suggest using multiple air carriers for a multi-flight trip even if doing so would be less expensive for the customer."], "a": "D", "at": "Some airline ticketing systems do not suggest using multiple air carriers for a multi-flight trip even if doing so would be less expensive for the customer.", "type": "single"}, {"n": 65, "q": "In the video regarding the paper \"Bias in Computer Systems\" by Friedman and Nissenbaum, what is the bias found in the National Resident Match Program?", "c": ["The National Residency Match Program is biased against those British citizens that do not live in England.", "Medical school students are biased against when they try to select a training program.", "Customers that are trying to find an apartment to establish residency within Great Britain are biased against if this is their first attempt.", "The National Residency Match Program is biased against a child with a British father and a mother from another country."], "a": "B", "at": "Medical school students are biased against when they try to select a training program.", "type": "single"}, {"n": 66, "q": "In the video regarding the paper \"Embedding Ethics in Computer Architecture\" by Alan Clements, which of the following statements is the most correct?", "c": ["Algorithms that support the sharing of a computer resource (e.g. 'priority,' 'round-robin,' etc.) are never fair, and therefore are always unethical.", "Operating a computer outside of it recommended limits is encouraged to increase throughput.", "In order to be ethical and fair, a computer should be overclocked to increase throughput to accommodate everyone.", "Overclocking a CPU can be unethical in certain situations."], "a": "D", "at": "Overclocking a CPU can be unethical in certain situations.", "type": "single"}, {"n": 67, "q": "In the video regarding the paper \"Embedding Ethics in Computer Architecture\" by Alan Clements, what is the result of an error in binary arithmetic?", "c": ["An airplane was routed to the wrong location and ran out of fuel.", "A nuclear reactor had a meltdown.", "Medical equipment gave the wrong amount of radiation.", "Several people were killed in a missile attack."], "a": "D", "at": "Several people were killed in a missile attack.", "type": "single"}, {"n": 68, "q": "Regarding the video \"The Ethical Problem with Facebook's Emotional Experiment,\" which of the following statements is the most correct?", "c": ["Facebook demonstrated they could manipulate a person into buying candy buy making the person feel lonely by blocking all content from their friends for a 16 day period.", "Facebook demonstrated they could make a user sad by displaying a fake news story regarding the death of someone the user had identified as a \"friend\" in their Facebook profile.", "Facebook demonstrated they could manipulate a person into buying weight loss products by altering their Facebook profile picture by making the user appear to be fatter.", "Facebook demonstrated they could manipulate people's emotions by showing mostly negative or mostly positive posts in people's Facebook data feed."], "a": "D", "at": "Facebook demonstrated they could manipulate people's emotions by showing mostly negative or mostly positive posts in people's Facebook data feed.", "type": "single"}, {"n": 69, "q": "Regarding the video about \"Ethics in Security Research. Which Lines Should Not be Crossed?,\" which of the following statements is the most correct?", "c": ["Because spam is never harmful, observing spam in the wild and not warning the recipient is one of the few acceptable security research activities.", "Developing malware and allowing it to operate in the wild is ethical because it is the only way we can learn about malware.", "Developing malware to study user infection numbers and malware dissemination strategies is a bad idea.", "Developing anti-malware that eliminates some existing malware but also harms a small group of people is an acceptable trade-off."], "a": "C", "at": "Developing malware to study user infection numbers and malware dissemination strategies is a bad idea.", "type": "single"}, {"n": 70, "q": "Regarding the video about \"Ethics in Security Research. Which Lines Should Not be Crossed?,\" which of the following statements is the most correct?", "c": ["The biggest threat from spam is that it is a nuisance.", "Developing anti-malware is unethical because it is not ethical to be unethical to the unethical.", "About 50% of the spam sent worldwide advertise medicine/pharmaceutical products which are to a large percent counterfeited and a major health threat.", "It is actually cheaper to engage in ethical research rather than unethical research, so switching to ethical research should be easy."], "a": "C", "at": "About 50% of the spam sent worldwide advertise medicine/pharmaceutical products which are to a large percent counterfeited and a major health threat.", "type": "single"}, {"n": 71, "q": "Regarding the video about the paper on \"Research Ethics in Human-Computer Interaction,\" which of the following statements is the most accurate?", "c": ["It is not a violation of a research subject's privacy if they are not aware of their data being collected during the research process.", "Research subjects should not be allowed to withdraw from research once they have volunteered to be a research subject.", "Conducting secret research on a human subject is ethical as long as the human subject is informed of the research after it is completed.", "There is a concern that robots might injure a person if robots engage in activities such as caring for the elderly."], "a": "D", "at": "There is a concern that robots might injure a person if robots engage in activities such as caring for the elderly.", "type": "single"}, {"n": 72, "q": "Regarding the video about the paper on \"Research Ethics in Human-Computer Interaction,\" which of the following statements is the most accurate?", "c": ["Researchers do not need to be open about the data that is collected during the research.", "It is not necessary to accommodate a research subject's basic need to be free to move during the research.", "Researchers do not need to concerned about cultural differences among the participants.", "Researchers need to be careful regarding how recording technology might make the subject feel uncomfortable."], "a": "D", "at": "Researchers need to be careful regarding how recording technology might make the subject feel uncomfortable.", "type": "single"}, {"n": 73, "q": "The size of a screen display might be a source of bias as it influences what can be seen of the first page.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 74, "q": "Once bias is in a computer system, it is easy to remove.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 75, "q": "The term bias refers to a computer system that systematically and unfairly discriminates against certain individuals or groups of individuals in favor of others.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 76, "q": "Even though arbitration approaches such as fixed, priority, and round-robin are \"fair,\" they can still have their own bias.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 77, "q": "Computer-based binary arithmetic is precise and does not present any ethical challenges.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 78, "q": "Which of the following research topics have the potential to expose real people to harm? Select all that apply.", "c": ["spam", "credit card fraud", "viruses", "botnet"], "a": "A,B,C,D", "at": "A) spam\nB) credit card fraud\nC) viruses\nD) botnet", "type": "multi"}, {"n": 79, "q": "One abuse that can take place during research is 'secret data collection' in which the participant is unaware of the data that is being collected about them of their computer device(s).", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 80, "q": "Regarding the video about \"Elves Ethics - The Digital World,\" which of the following statements is the most accurate?", "c": ["There is a strict code of ethics that all participants follow.", "The Orcs slaughter the Elves with stolen weapons.", "The Elves defeat the Orcs with magic.", "The true identity of the 'gay girl in Damascus' is actually a male American student studying abroad."], "a": "D", "at": "The true identity of the 'gay girl in Damascus' is actually a male American student studying abroad.", "type": "single"}, {"n": 81, "q": "Regarding the video about the paper \"Ethic in Massively Multiplayer Online Role-Playing Games,\" which of the following statements is the most accurate?", "c": ["Behaving unethically in a virtual world might lead to unethical behavior in the real world.", "Griefing and bullying are not abusive because it is occurring in virtual reality.", "It is not possible to steal items from another person.", "Ninja looting is the process of killing a character a second time as soon as that character regenerates."], "a": "A", "at": "Behaving unethically in a virtual world might lead to unethical behavior in the real world.", "type": "single"}, {"n": 82, "q": "Regarding the video about the paper \"Ethic in Massively Multiplayer Online Role-Playing Games,\" which of the following statements is the most accurate?", "c": ["The abuse in virtual reality games is not real.", "There is no chance for any real monetary damage.", "Games do not help individuals learn good and bad behavior.", "The abuse in virtual reality games is real."], "a": "D", "at": "The abuse in virtual reality games is real.", "type": "single"}, {"n": 83, "q": "Regarding the video about the paper \"An Ethical Examination of the Internet Census 2012 Dataset - A Menlo Report Case Study,\" which of the following statements is the most accurate?", "c": ["Participants that answered questions found in the Internet Census are unethical for not providing honest answers.", "Students at Menlo College were involved in a very large cheating scandal.", "Students and Menlo University developed password cracking software that allowed them to enter devices connected to the Internet.", "A central point is that commercial products that are accessible from the Internet should not be sold with a default password."], "a": "D", "at": "A central point is that commercial products that are accessible from the Internet should not be sold with a default password.", "type": "single"}, {"n": 84, "q": "Regarding the video about the paper \"An Ethical Examination of the Internet Census 2012 Dataset - A Menlo Report Case Study,\" which of the following statements is the most accurate?", "c": ["The author suggests there should be more public outcry regarding the unethical behavior exhibited in the creation of the Internet Census 2012 Dataset.", "There is nothing unethical about using default passwords to enter a network that is intended to be locked.", "The German Penal Code considers a person's \"good intent\" when deciding if a law has been broken.", "Because there was such an outcry about the unethical behavior in the creation of the Internet Census 2012 Dataset, other researchers are discouraged from similar activity."], "a": "A", "at": "The author suggests there should be more public outcry regarding the unethical behavior exhibited in the creation of the Internet Census 2012 Dataset.", "type": "single"}, {"n": 85, "q": "Regarding the video about \"Cyber War,\" which of the following statements is the most accurate?", "c": ["The speaker stated experienced hackers are recruited at the Def Con Hacking Conference in Las Vegas, NV almost every year.", "Logic bombs have been placed in the power grid of the United States.", "The Federal Bureau of Investigation in the United States engages in Cyber War against hackers in other countries.", "Cyber-attacks do not cause destruction in physical space, so cyber war is considered ethical."], "a": "B", "at": "Logic bombs have been placed in the power grid of the United States.", "type": "single"}, {"n": 86, "q": "Regarding the video about the paper \"An Analysis of a Just Cyber Warfare,\" which of the following statements in the most accurate?", "c": ["Floridi states 'information does not have a right to exist,' and this is the foundation of a Just Cyber Warfare Theory.", "Floridi states 'information does not have a right to exist,' and therefore cyber warfare is not unethical.", "The Just War Theory is inadequate for evaluating the ethicalness of cyber warfare.", "The Just War Theory states cyber warfare is unethical."], "a": "C", "at": "The Just War Theory is inadequate for evaluating the ethicalness of cyber warfare.", "type": "single"}, {"n": 87, "q": "Regarding the video about the paper \"An Analysis of a Just Cyber Warfare,\" which of the following statements in the most accurate?", "c": ["Cyber Warfare makes the Just War Theory invalid.", "When addressing Cyber Warfare, the Just War Theory cannot be applied and should be rejected altogether.", "A principle of Just Cyber Warfare is that a Cyber War should be waged to promote the well-being of the infosphere.", "Floridi states 'information has a right to exist,' and therefore cyber warfare that destroys information is unethical."], "a": "D", "at": "Floridi states 'information has a right to exist,' and therefore cyber warfare that destroys information is unethical.", "type": "single"}, {"n": 88, "q": "According to the paper regarding \"Ethic in Massively Multiplayer Online Role-Playing Games,\" what are the primary means by which playing games help guide moral development? Select all that apply.", "c": ["Practice following rules.", "Defining good and bad behavior.", "Learning a system of rules.", "Developing poor social skills"], "a": "A,B,C", "at": "Practice following rules.\nDefining good and bad behavior.\nLearning a system of rules.", "type": "multi"}, {"n": 89, "q": "An investigation done by Coyne (as cited in Ethic in Massively Multiplayer Online Role-Playing Games) finds that online griefing has a similar impact as traditional bullying.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 90, "q": "Griefing is bulling; it is abusive; it evokes real emotion; it is genuinely hurtful.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 91, "q": "There should be more public outcry regarding the unethical mapping of the Internet with the Carna botnet.", "c": ["True", "False", "", ""], "a": "A", "at": "True", "type": "tf"}, {"n": 92, "q": "It is not unethical to use default passwords to enter a computer network that one is not authorized to enter.", "c": ["True", "False", "", ""], "a": "B", "at": "False", "type": "tf"}, {"n": 93, "q": "What are the main elements of a 'Just War Theory?'", "c": ["War as a last resort", "To the victor goes the spoils (goods taken by force).", "Do more good than harm.", "Avoid harming non-combatants"], "a": "A,C,D", "at": "A) War as a last resort\nC) Do more good than harm.\nD) Avoid harming non-combatants", "type": "multi"}]</script>
+
 <script>
 /* ======================= CROSS-DEVICE SYNC CONFIG =======================
    Paste your Supabase project URL and anon / publishable key here.
@@ -167,35 +219,83 @@ const SUPABASE_ANON_KEY = 'sb_publishable_icjF5LCzbbn7e0z6h93NrA_mYf-68Mv';  // 
 (function(){
 'use strict';
 const DECK = JSON.parse(document.getElementById('deck-data').textContent);
-const L = ['A','B','C','D'];
-const KEY = 'ethicsQuiz.v1';
-const REQUEUE_GAP = 3;          // a missed question comes back after this many other questions
-const byN = {}; DECK.forEach(c => byN[c.n] = c);
+const L = ['A','B','C','D','E','F'];
+const KEY = 'ethicsQuiz.v1';            // same localStorage key as the single-deck version (migrated in place)
+const BUILTIN_ID = 'ce', BUILTIN_NAME = 'Computer Ethics';
+const REQUEUE_GAP = 3;                  // a missed question comes back after this many other questions
+const SYNC_SOFT_LIMIT_KB = 1024;        // server cap after supabase_migration_002.sql (200 KB before it)
 
 // ---------- state ----------
-function fresh(){ return {v:1, updatedAt:0, tab:'study', filter:'all', stars:{}, missed:{}, edits:{}, stats:{}, study:null}; }
+// Saved state (localStorage + cloud):
+//   {v:1, schema:2, updatedAt, tab, active, order:[setId...], sets:{id:{id,name,builtin,cards?,filter,stars,missed,edits,stats,study}},
+//    filter, stars, missed, edits, stats, study}   <- top-level copies of the built-in set, so an older
+//                                                     single-deck app (v:1) still reads Computer Ethics progress.
+function blankProgress(){ return {filter:'all', stars:{}, missed:{}, edits:{}, stats:{}, study:null}; }
+function obj(x){ return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; }
+function cleanProgress(src){
+  src = obj(src);
+  const st = src.study && typeof src.study === 'object' && Array.isArray(src.study.queue) && Array.isArray(src.study.done) ? src.study : null;
+  return {filter: typeof src.filter === 'string' ? src.filter : 'all', stars: obj(src.stars), missed: obj(src.missed),
+    edits: obj(src.edits), stats: obj(src.stats), study: st};
+}
+function migrate(raw){
+  raw = obj(raw);
+  const out = {v:1, schema:2, updatedAt: +raw.updatedAt || 0, tab: raw.tab === 'browse' ? 'browse' : 'study', active: BUILTIN_ID, order: [BUILTIN_ID], sets: {}};
+  if (raw.sets && typeof raw.sets === 'object'){
+    const ids = (Array.isArray(raw.order) ? raw.order : []).concat(Object.keys(raw.sets));
+    ids.forEach(id => {
+      const s = raw.sets[id]; if (!s || out.sets[id]) return;
+      if (id === BUILTIN_ID){ out.sets[id] = Object.assign({id, name: BUILTIN_NAME, builtin: true}, cleanProgress(s)); return; }
+      if (!Array.isArray(s.cards) || !s.cards.length) return;
+      out.sets[id] = Object.assign({id, name: String(s.name || 'Untitled set').slice(0, 80), builtin: false, created: +s.created || 0, cards: s.cards}, cleanProgress(s));
+      out.order.push(id);
+    });
+    if (raw.sets[raw.active] && out.sets[raw.active]) out.active = raw.active;
+  }
+  out.deleted = {}; Object.keys(obj(raw.deleted)).forEach(id => { if (id !== BUILTIN_ID) out.deleted[id] = +raw.deleted[id] || 1; });
+  Object.keys(out.deleted).forEach(id => { if (out.sets[id]){ delete out.sets[id]; } });
+  out.order = out.order.filter(id => out.sets[id] || id === BUILTIN_ID);
+  if (!out.sets[out.active] && out.active !== BUILTIN_ID) out.active = BUILTIN_ID;
+  // schema-1 state (single deck) or a missing built-in set: take progress from the top-level fields
+  if (!out.sets[BUILTIN_ID]) out.sets[BUILTIN_ID] = Object.assign({id: BUILTIN_ID, name: BUILTIN_NAME, builtin: true}, cleanProgress(raw));
+  return out;
+}
+function serialize(){
+  const ce = S.sets[BUILTIN_ID];
+  return Object.assign({}, S, {filter: ce.filter, stars: ce.stars, missed: ce.missed, edits: ce.edits, stats: ce.stats, study: ce.study});
+}
 function load(){
-  try {
-    const s = JSON.parse(localStorage.getItem(KEY));
-    if (s && s.v === 1){ const f = fresh(); Object.keys(f).forEach(k => { if (k in s) f[k] = s[k]; }); if (f.tab !== 'browse') f.tab = 'study'; return f; }
-  } catch(e){}
-  return fresh();
+  try { const raw = JSON.parse(localStorage.getItem(KEY)); if (raw) return migrate(raw); } catch(e){}
+  return migrate(null);
 }
 let S = load();
-// persist(): write the local cache only (no "real" change, e.g. tab switch or auto-started round).
-// touch():   a user change (answer, star, edit, restart, reset, filter); bumps updatedAt and schedules a sync push.
-function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+// persist(): write the local cache only (no "real" change, e.g. tab/set switch or auto-started round).
+// touch():   a user change (answer, star, edit, restart, reset, filter, set upload/rename/delete); bumps updatedAt and schedules a sync push.
+function persist(){ try { localStorage.setItem(KEY, JSON.stringify(serialize())); } catch(e){ toast('Could not save locally (storage full?)'); } }
 function touch(){ S.updatedAt = Date.now(); persist(); Sync.schedule(); }
+
+// ---------- sets ----------
+function cs(){ return S.sets[S.active] || S.sets[BUILTIN_ID]; }          // current set (progress lives here)
+function setCards(set){ return set.builtin ? DECK : set.cards; }
+function cards(){ return setCards(cs()); }
+const indexCache = new WeakMap();
+function cardMap(arr){ let m = indexCache.get(arr); if (!m){ m = {}; arr.forEach(c => m[c.n] = c); indexCache.set(arr, m); } return m; }
+function byN(n){ return cardMap(cards())[n]; }
+function setProgress(set){
+  const total = setCards(set).length;
+  if (set.study) return {done: set.study.done.length, total: set.study.total};
+  return {done: 0, total};
+}
 
 // ---------- helpers ----------
 const $ = s => document.querySelector(s);
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function isEdited(c){ return Object.prototype.hasOwnProperty.call(S.edits, c.n); }
-function ans(c){ return isEdited(c) ? S.edits[c.n] : c.a; }
+function isEdited(c){ return Object.prototype.hasOwnProperty.call(cs().edits, c.n); }
+function ans(c){ return isEdited(c) ? cs().edits[c.n] : c.a; }
 function isFill(c){ return c.type === 'fill'; }
 function isTF(c){ return c.type === 'tf'; }
-function optIdx(c){ const r = []; c.c.forEach((t, i) => { if (String(t).trim() !== '') r.push(i); }); return r; }
+function optIdx(c){ const r = []; c.c.forEach((t, i) => { if (String(t == null ? '' : t).trim() !== '') r.push(i); }); return r; }
 function ansSet(c){ return ans(c).split(',').map(s => s.trim().toUpperCase()).filter(Boolean); }
 function isMulti(c){ return !isFill(c) && (/select all/i.test(c.q) || ansSet(c).length > 1); }
 function answerText(c){
@@ -207,17 +307,17 @@ function badges(c, opts){
   opts = opts || {};
   let h = '<span class="badge b-num">#' + c.n + '</span><span class="badge b-type">' + typeLabel(c) + '</span>';
   if (isEdited(c)) h += '<span class="badge b-edit" title="You edited this answer">✎ edited</span>';
-  if (opts.missed && S.missed[c.n]) h += '<span class="badge b-missed">missed</span>';
+  if (opts.missed && cs().missed[c.n]) h += '<span class="badge b-missed">missed</span>';
   if (opts.again) h += '<span class="badge b-again" title="You missed this one earlier this round">↻ again</span>';
   return h;
 }
 function filtered(){
-  const f = S.filter;
-  return DECK.filter(c => f === 'all' || (f === 'starred' && S.stars[c.n]) || (f === 'missed' && S.missed[c.n]) ||
-    (f === 'starred_missed' && (S.stars[c.n] || S.missed[c.n])));
+  const P = cs(), f = P.filter;
+  return cards().filter(c => f === 'all' || (f === 'starred' && P.stars[c.n]) || (f === 'missed' && P.missed[c.n]) ||
+    (f === 'starred_missed' && (P.stars[c.n] || P.missed[c.n])));
 }
-function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1800); }
-function norm(s){ return String(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+function toast(msg, ms){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms || 2200); }
+function norm(s){ return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
 function checkFill(c, input){
   const a = norm(ans(c)), u = norm(input);
   if (!u) return false;
@@ -228,28 +328,31 @@ function checkFill(c, input){
   return keyWords.length > 0 && keyWords.every(w => uw.has(w) || [...uw].some(x => x.length >= 5 && (w.startsWith(x) || x.startsWith(w))));
 }
 function sameSet(a, b){ return [...a].sort().join(',') === [...b].sort().join(','); }
-function toggleStar(n){ if (S.stars[n]) delete S.stars[n]; else S.stars[n] = true; touch(); updateCount(); }
+function toggleStar(n){ const P = cs(); if (P.stars[n]) delete P.stars[n]; else P.stars[n] = true; touch(); updateCount(); }
 
 // ---------- top-level ----------
 function setTab(t){ S.tab = t; persist(); render(); }
 function updateCount(){
-  $('#filterCount').textContent = filtered().length + ' of ' + DECK.length + ' cards';
-  $('#subtitle').textContent = DECK.length + ' cards · ' + Object.keys(S.stars).length + ' starred · ' + Object.keys(S.missed).length + ' missed';
+  const P = cs(), all = cards();
+  $('#filterCount').textContent = filtered().length + ' of ' + all.length + ' cards';
+  $('#brandName').textContent = P.name;
+  $('#subtitle').textContent = all.length + ' cards · ' + Object.keys(P.stars).length + ' starred · ' + Object.keys(P.missed).length + ' missed';
+  document.title = P.name + ' · Study';
+  renderSidebar();
 }
 function render(){
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
-  $('#filterSel').value = S.filter;
+  $('#filterSel').value = cs().filter;
   updateCount();
   const v = $('#view'); v.innerHTML = '';
   (S.tab === 'browse' ? renderBrowse : renderStudy)(v);
 }
-
 // ---------- question widget ----------
 // Renders one question into el. Calls onAnswer(correct, {override}) when answered.
 function questionWidget(el, c, opts, onAnswer){
   const multi = isMulti(c), tf = isTF(c), fill = isFill(c);
   const sel = new Set(); let answered = false;
-  let html = '<div class="meta">' + badges(c, {again: opts.again}) + '<span class="spacer"></span><button class="star' + (S.stars[c.n] ? ' on' : '') + '" data-w="star" title="Star">' + (S.stars[c.n] ? '★' : '☆') + '</button></div>' +
+  let html = '<div class="meta">' + badges(c, {again: opts.again}) + '<span class="spacer"></span><button class="star' + (cs().stars[c.n] ? ' on' : '') + '" data-w="star" title="Star">' + (cs().stars[c.n] ? '★' : '☆') + '</button></div>' +
     '<div class="qtext" style="margin-top:10px">' + esc(c.q) + '</div>';
   if (multi) html += '<div class="muted" style="font-size:.85rem;margin-top:6px">Select all that apply, then press Check.</div>';
   if (fill){
@@ -263,7 +366,7 @@ function questionWidget(el, c, opts, onAnswer){
   html += '<div id="fb"></div>';
   el.innerHTML = html;
   const fb = el.querySelector('#fb');
-  el.querySelector('[data-w="star"]').addEventListener('click', e => { const b = e.currentTarget; toggleStar(c.n); b.classList.toggle('on', !!S.stars[c.n]); b.textContent = S.stars[c.n] ? '★' : '☆'; });
+  el.querySelector('[data-w="star"]').addEventListener('click', e => { const b = e.currentTarget; toggleStar(c.n); b.classList.toggle('on', !!cs().stars[c.n]); b.textContent = cs().stars[c.n] ? '★' : '☆'; });
   function finish(correct, typed){
     answered = true;
     const set = ansSet(c);
@@ -303,7 +406,7 @@ function questionWidget(el, c, opts, onAnswer){
   return {
     key(k){
       if (answered || fill) return false;
-      const m = {'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3}[k.toLowerCase()];
+      const m = {'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'a':0,'b':1,'c':2,'d':3,'e':4,'f':5}[k.toLowerCase()];
       if (m !== undefined){ const b = el.querySelector('.opt[data-letter="' + L[m] + '"]'); if (b){ b.click(); return true; } }
       if (k === 'Enter' && multi && chk && !chk.disabled){ chk.click(); return true; }
       return false;
@@ -317,19 +420,19 @@ function questionWidget(el, c, opts, onAnswer){
 // Wrong → re-inserted REQUEUE_GAP positions later.
 let widget = null;
 function startRound(ids){
-  S.study = {queue: shuffle(ids), total: ids.length, done: [], wrongOnce: [], attempts: 0, wrong: 0, current: null};
+  cs().study = {queue: shuffle(ids), total: ids.length, done: [], wrongOnce: [], attempts: 0, wrong: 0, current: null};
   persist();
 }
 function renderStudy(v){
   if (Sync.initialPending){ v.innerHTML = '<div class="panel empty" id="syncLoading">Loading your synced progress…</div>'; return; }
-  if (!S.study){
+  if (!cs().study){
     const list = filtered();
     if (!list.length){ v.innerHTML = '<div class="panel empty">No cards match this filter. Pick "All cards" or star some questions.</div>'; return; }
     startRound(list.map(c => c.n));
   }
-  const R = S.study;
+  const R = cs().study;
   if (!R.queue.length){ renderFinish(v); return; }
-  const n = R.queue[0], c = byN[n];
+  const n = R.queue[0], c = byN(n);
   if (!c){ R.queue.shift(); persist(); render(); return; }
   const pct = 100 * R.done.length / R.total;
   v.innerHTML = '<div class="panel" id="study"><div class="qhead"><span class="done-count" id="doneCount">' + R.done.length + ' / ' + R.total + ' done</span>' +
@@ -338,30 +441,31 @@ function renderStudy(v){
     '<div class="progress"><i id="progressBar" style="width:' + pct + '%"></i></div>' +
     '<div id="qbox" data-n="' + n + '"></div>' +
     '<div class="row right" style="margin-top:14px"><button class="btn primary" id="nextBtn" style="display:none">Next →</button></div></div>' +
-    '<div class="kbd hide-sm"><kbd>1</kbd>–<kbd>4</kbd> or <kbd>A</kbd>–<kbd>D</kbd> to answer · <kbd>Enter</kbd> check / next</div>';
+    '<div class="kbd hide-sm">' + (isFill(c) ? '<kbd>Enter</kbd> check / next' : '<kbd>1</kbd>–<kbd>' + optIdx(c).length + '</kbd> or <kbd>A</kbd>–<kbd>' + L[optIdx(c).length - 1] + '</kbd> to answer · <kbd>Enter</kbd> check / next') + '</div>';
   widget = questionWidget($('#qbox'), c, {again: R.wrongOnce.includes(n)}, (correct, d) => {
     if (d.override){
       // typed answer marked right after being graded wrong: undo the re-queue and retire it
       const idx = R.queue.indexOf(n); if (idx >= 0) R.queue.splice(idx, 1);
       if (!R.done.includes(n)) R.done.push(n);
       R.wrong = Math.max(0, R.wrong - 1);
-      if (R.lastMissFirstTime){ R.wrongOnce = R.wrongOnce.filter(x => x !== n); delete S.missed[n]; }
-      const st = S.stats[n]; if (st){ st.w = Math.max(0, st.w - 1); st.r++; }
+      if (R.lastMissFirstTime){ R.wrongOnce = R.wrongOnce.filter(x => x !== n); delete cs().missed[n]; }
+      const st = cs().stats[n]; if (st){ st.w = Math.max(0, st.w - 1); st.r++; }
     } else {
       R.attempts++;
       const firstTry = !R.wrongOnce.includes(n);
       R.queue.shift();
-      const st = S.stats[n] || (S.stats[n] = {r:0, w:0});
+      const st = cs().stats[n] || (cs().stats[n] = {r:0, w:0});
       if (correct){
         st.r++; R.done.push(n);
-        if (firstTry) delete S.missed[n];
+        if (firstTry) delete cs().missed[n];
       } else {
-        st.w++; R.wrong++; S.missed[n] = true;
+        st.w++; R.wrong++; cs().missed[n] = true;
         R.lastMissFirstTime = firstTry;
         if (firstTry) R.wrongOnce.push(n);
         R.queue.splice(Math.min(R.queue.length, REQUEUE_GAP), 0, n);
       }
     }
+    window.__ethicsQuiz.last = {n: n, set: S.active, correct: !!(correct || d.override), override: !!d.override};
     touch(); updateCount();
     $('#doneCount').textContent = R.done.length + ' / ' + R.total + ' done';
     $('#progressBar').style.width = (100 * R.done.length / R.total) + '%';
@@ -369,20 +473,20 @@ function renderStudy(v){
     const nb = $('#nextBtn'); nb.textContent = R.queue.length ? 'Next →' : 'Finish →'; nb.style.display = ''; nb.focus({preventScroll:true});
   });
   $('#nextBtn').addEventListener('click', () => { render(); window.scrollTo({top:0}); });
-  $('#restartRound').addEventListener('click', () => { if (R.done.length === 0 || confirm('Restart this round? Progress in the current round will be cleared.')){ S.study = null; touch(); render(); } });
+  $('#restartRound').addEventListener('click', () => { if (R.done.length === 0 || confirm('Restart this round? Progress in the current round will be cleared.')){ cs().study = null; touch(); render(); } });
 }
 function renderFinish(v){
-  const R = S.study;
+  const R = cs().study;
   const firstTry = R.total - R.wrongOnce.length;
   v.innerHTML = '<div class="panel" id="finish"><div class="result-hero"><div class="big">🎉</div><h2 style="margin:6px 0" id="finishTitle">All ' + R.total + ' questions answered correctly!</h2>' +
     '<p class="muted" style="margin:0">Round complete.</p></div>' +
     '<div class="stat-grid"><div class="stat"><b>' + firstTry + ' / ' + R.total + '</b><span>right first try</span></div><div class="stat"><b>' + R.wrong + '</b><span>mistakes along the way</span></div><div class="stat"><b>' + R.attempts + '</b><span>answers given</span></div></div>' +
     '<div class="row" style="justify-content:center"><button class="btn primary" id="restartBtn">↻ Restart round</button>' +
     '<button class="btn" id="practiceMissed"' + (R.wrongOnce.length ? '' : ' disabled') + '>Practice the ' + R.wrongOnce.length + ' I missed</button></div>' +
-    (R.wrongOnce.length ? '<h3 style="margin:22px 0 0">Missed at least once</h3><div class="list">' + R.wrongOnce.map(n => { const c = byN[n]; return c ?
+    (R.wrongOnce.length ? '<h3 style="margin:22px 0 0">Missed at least once</h3><div class="list">' + R.wrongOnce.map(n => { const c = byN(n); return c ?
       '<div class="item"><div class="meta">' + badges(c) + '</div><div class="q" style="margin-top:6px">' + esc(c.q) + '</div><div class="a">✓ ' + esc(answerText(c)).replace(/\n/g, '<br>✓ ') + '</div></div>' : ''; }).join('') + '</div>' : '') +
     '</div>';
-  $('#restartBtn').addEventListener('click', () => { S.study = null; touch(); render(); window.scrollTo({top:0}); });
+  $('#restartBtn').addEventListener('click', () => { cs().study = null; touch(); render(); window.scrollTo({top:0}); });
   $('#practiceMissed').addEventListener('click', () => { startRound(R.wrongOnce.slice()); touch(); render(); window.scrollTo({top:0}); });
 }
 
@@ -394,10 +498,10 @@ function renderBrowse(v){
     const q = browseQ.toLowerCase();
     const list = filtered().filter(c => !q || (c.q + ' ' + c.c.join(' ') + ' ' + ans(c) + ' ' + answerText(c)).toLowerCase().includes(q));
     $('#bList').innerHTML = list.length ? list.map(c => '<div class="item" data-n="' + c.n + '"><div class="meta">' + badges(c, {missed:true}) + '<span class="spacer"></span>' +
-      '<button class="star' + (S.stars[c.n] ? ' on' : '') + '" data-b="star">' + (S.stars[c.n] ? '★' : '☆') + '</button><button class="btn small" data-b="edit">✎ Edit</button></div>' +
+      '<button class="star' + (cs().stars[c.n] ? ' on' : '') + '" data-b="star">' + (cs().stars[c.n] ? '★' : '☆') + '</button><button class="btn small" data-b="edit">✎ Edit</button></div>' +
       '<div class="q" style="margin-top:6px">' + esc(c.q) + '</div><div class="a">✓ ' + esc(answerText(c)).replace(/\n/g, '<br>✓ ') + '</div></div>').join('') : '<div class="panel empty">No matching cards.</div>';
     $('#bList').querySelectorAll('[data-b]').forEach(b => b.addEventListener('click', () => {
-      const c = byN[+b.closest('.item').dataset.n];
+      const c = byN(+b.closest('.item').dataset.n);
       if (b.dataset.b === 'star'){ toggleStar(c.n); draw(); } else openEdit(c, draw);
     }));
   };
@@ -412,21 +516,369 @@ function openEdit(c, after){
   if (isFill(c)) body = '<input class="fill-input" id="editFill" value="' + esc(ans(c)) + '">';
   else body = optIdx(c).map(i => '<label class="checkrow"><input type="' + (multiAllowed ? 'checkbox' : 'radio') + '" name="ek" value="' + L[i] + '"' + (cur.includes(L[i]) ? ' checked' : '') + '><span><b>' + L[i] + '.</b> ' + esc(c.c[i]) + '</span></label>').join('');
   m.innerHTML = '<h3>Edit answer key · #' + c.n + '</h3><p class="muted" style="margin:0 0 10px;font-size:.92rem">' + esc(c.q) + '</p>' + body +
-    '<p class="muted" style="font-size:.82rem">Original key: <b>' + esc(c.a) + '</b>. ' + (multiAllowed && !isFill(c) ? 'Tick several boxes for select-all answers. ' : '') + 'Saved on this device.</p>' +
+    '<p class="muted" style="font-size:.82rem">Original key: <b>' + esc(c.a) + '</b>. ' + (multiAllowed && !isFill(c) ? 'Tick several boxes for select-all answers. ' : '') + 'Saved with your progress.</p>' +
     '<div class="row right"><button class="btn ghost" id="eRevert"' + (isEdited(c) ? '' : ' disabled') + '>Revert to original</button><button class="btn" id="eCancel">Cancel</button><button class="btn primary" id="eSave">Save</button></div>';
   $('#overlay').classList.add('show');
   const close = () => $('#overlay').classList.remove('show');
   $('#eCancel').onclick = close;
-  $('#eRevert').onclick = () => { delete S.edits[c.n]; touch(); close(); toast('Reverted #' + c.n); after ? after() : render(); };
+  $('#eRevert').onclick = () => { delete cs().edits[c.n]; touch(); close(); toast('Reverted #' + c.n); after ? after() : render(); };
   $('#eSave').onclick = () => {
     const val = isFill(c) ? $('#editFill').value.trim() : [...m.querySelectorAll('input[name="ek"]:checked')].map(x => x.value).sort().join(',');
     if (!val){ toast('Pick at least one answer'); return; }
-    if (val === c.a) delete S.edits[c.n]; else S.edits[c.n] = val;
+    if (val === c.a) delete cs().edits[c.n]; else cs().edits[c.n] = val;
     touch(); close(); toast('Saved answer for #' + c.n); after ? after() : render();
   };
 }
 $('#overlay').addEventListener('click', e => { if (e.target.id === 'overlay') $('#overlay').classList.remove('show'); });
 
+// ---------- sets sidebar ----------
+function renderSidebar(){
+  const sb = $('#sidebar');
+  sb.innerHTML = '<h4>Sets<span class="spacer"></span><button class="icon-btn drawer-only" data-act="close" title="Close" aria-label="Close sets">✕</button></h4>' +
+    S.order.filter(id => S.sets[id]).map(id => {
+      const s = S.sets[id], p = setProgress(s);
+      return '<div class="set-item' + (id === S.active ? ' active' : '') + '" data-id="' + esc(id) + '" role="button" tabindex="0" title="' + esc(s.name) + '" aria-current="' + (id === S.active) + '">' +
+        '<span class="set-name">' + esc(s.name) + '</span><span class="set-count" title="done / total this round">' + p.done + '/' + p.total + '</span>' +
+        (s.builtin ? '' : '<span class="set-actions"><button class="icon-btn" data-act="rename" title="Rename set" aria-label="Rename ' + esc(s.name) + '">✎</button>' +
+          '<button class="icon-btn danger" data-act="delete" title="Delete set" aria-label="Delete ' + esc(s.name) + '">🗑</button></span>') + '</div>';
+    }).join('') +
+    '<button class="btn small new-set" data-act="new" id="newSetBtn">＋ New set · Upload CSV</button><div class="side-hint hide-sm">or drop a .csv file anywhere</div>';
+  const P = cs(), pr = setProgress(P);
+  $('#toggleName').textContent = P.name;
+  $('#toggleCount').textContent = pr.done + '/' + pr.total;
+}
+function openDrawer(){ $('#sidebar').classList.add('open'); $('#backdrop').classList.add('show'); }
+function closeDrawer(){ $('#sidebar').classList.remove('open'); $('#backdrop').classList.remove('show'); }
+function switchSet(id){
+  if (!S.sets[id]) return;
+  closeDrawer();
+  if (id === S.active) return;
+  S.active = id; browseQ = ''; widget = null;
+  persist(); render(); window.scrollTo({top:0});
+}
+function renameSet(id){
+  const s = S.sets[id]; if (!s || s.builtin) return;
+  const m = $('#modal');
+  m.innerHTML = '<h3>Rename set</h3><input class="fill-input" id="renameIn" maxlength="80" value="' + esc(s.name) + '">' +
+    '<div class="row right" style="margin-top:14px"><button class="btn" id="rnCancel">Cancel</button><button class="btn primary" id="rnSave">Save</button></div>';
+  $('#overlay').classList.add('show');
+  const inp = $('#renameIn'); setTimeout(() => { inp.focus(); inp.select(); }, 30);
+  const close = () => $('#overlay').classList.remove('show');
+  $('#rnCancel').onclick = close;
+  $('#rnSave').onclick = () => { const v = inp.value.trim().slice(0, 80); if (!v){ inp.focus(); return; } s.name = v; touch(); close(); render(); toast('Renamed to “' + v + '”'); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('#rnSave').click(); } });
+}
+function deleteSet(id){
+  const s = S.sets[id]; if (!s || s.builtin) return;
+  if (!confirm('Delete the set “' + s.name + '” (' + s.cards.length + ' questions) and its progress? This can\'t be undone.')) return;
+  delete S.sets[id];
+  S.order = S.order.filter(x => x !== id);
+  S.deleted = Object.assign({}, S.deleted, {[id]: Date.now()});   // tombstone so a sync merge won't bring it back
+  if (S.active === id){ S.active = BUILTIN_ID; widget = null; browseQ = ''; }
+  touch(); render(); toast('Deleted “' + s.name + '”');
+}
+$('#sidebar').addEventListener('click', e => {
+  const actBtn = e.target.closest('[data-act]'), item = e.target.closest('.set-item');
+  const act = actBtn && actBtn.dataset.act;
+  if (act === 'close') return closeDrawer();
+  if (act === 'new'){ closeDrawer(); return openImport(); }
+  if (!item) return;
+  if (act === 'rename') return renameSet(item.dataset.id);
+  if (act === 'delete') return deleteSet(item.dataset.id);
+  switchSet(item.dataset.id);
+});
+$('#sidebar').addEventListener('keydown', e => {
+  const item = e.target.closest('.set-item');
+  if (item && e.target === item && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); switchSet(item.dataset.id); }
+});
+$('#setsToggle').addEventListener('click', () => $('#sidebar').classList.contains('open') ? closeDrawer() : openDrawer());
+$('#backdrop').addEventListener('click', closeDrawer);
+
+// ---------- CSV parsing ----------
+// RFC-4180 style: quoted fields with "" escapes, delimiters / CR / LF inside quotes, BOM, CRLF / CR / LF line ends.
+function parseCSV(text){
+  text = String(text == null ? '' : text).replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');   // CRLF / CR -> LF (also inside quoted fields)
+  const first = (text.split(/\r\n|\n|\r/, 1)[0] || '');
+  const cnt = ch => first.split(ch).length - 1;
+  const delim = cnt('\t') > cnt(',') ? '\t' : (cnt(';') > cnt(',') ? ';' : ',');
+  const rows = []; let row = [], f = '', q = false, i = 0;
+  const n = text.length;
+  while (i < n){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i + 1] === '"'){ f += '"'; i += 2; continue; } q = false; i++; continue; }
+      f += ch; i++; continue;
+    }
+    if (ch === '"' && f.trim() === ''){ q = true; f = ''; i++; continue; }
+    if (ch === delim){ row.push(f); f = ''; i++; continue; }
+    if (ch === '\r' || ch === '\n'){ row.push(f); rows.push(row); row = []; f = ''; i += (ch === '\r' && text[i + 1] === '\n') ? 2 : 1; continue; }
+    f += ch; i++;
+  }
+  if (f !== '' || row.length){ row.push(f); rows.push(row); }
+  rows.unterminated = q;
+  rows.delimiter = delim;
+  return rows;
+}
+// difflib.SequenceMatcher-style ratio (Ratcliff/Obershelp), same threshold the build pipeline used.
+function simRatio(a, b){
+  if (!a.length && !b.length) return 1;
+  function matches(a, b){
+    if (!a.length || !b.length) return 0;
+    let best = 0, bi = 0, bj = 0;
+    const prev = new Array(b.length + 1).fill(0);
+    for (let i = 1; i <= a.length; i++){
+      let diag = 0;
+      for (let j = 1; j <= b.length; j++){
+        const tmp = prev[j];
+        prev[j] = a[i - 1] === b[j - 1] ? diag + 1 : 0;
+        if (prev[j] > best){ best = prev[j]; bi = i - best; bj = j - best; }
+        diag = tmp;
+      }
+    }
+    if (!best) return 0;
+    return best + matches(a.slice(0, bi), b.slice(0, bj)) + matches(a.slice(bi + best), b.slice(bj + best));
+  }
+  return 2 * matches(a, b) / (a.length + b.length);
+}
+function hk(h){ return String(h == null ? '' : h).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+const Q_HEADERS = ['question','questions','q','prompt','stem','question text','text'];
+const A_HEADERS = ['answer','answers','correct','correct answer','correct answers','correct option','correct options','correct choice','key','answer key','solution'];
+const AT_HEADERS = ['answertext','answer text','correct answer text'];
+const TERM_HEADERS = ['term','terms','word','front','vocab','vocabulary','concept'];
+const DEF_HEADERS = ['definition','definitions','meaning','back','def','description'];
+function choiceIndex(h){
+  const m = /^(?:option|choice|opt|ans|answer|alternative|alt)?\s*([a-f]|[1-6])$/.exec(h);
+  if (!m) return -1;
+  return /\d/.test(m[1]) ? +m[1] - 1 : 'abcdef'.indexOf(m[1]);
+}
+// Map an answer cell to choice letters (indices). Returns {idx:[...]} or {err:'reason'}. Never guesses.
+function matchAnswer(raw, choices){
+  const ans = String(raw).trim();
+  const nc = choices.map(c => norm(c));
+  const valid = i => i >= 0 && i < choices.length && nc[i] !== '' ;
+  if (!ans) return {err: 'no answer given'};
+  // 1. whole answer equals one choice's text; 2. letters "B", "A,C", "A C D", "a; c", "A & C", "A and C", "ACD"; 3. numbers "2", "1,3"
+  const exact = nc.map((c, i) => c !== '' && c === norm(ans) ? i : -1).filter(i => i >= 0);
+  const lt = ans.replace(/^(?:answers?|correct)\s*[:\-]\s*/i, '').trim();
+  let code = null;
+  if (/^[A-Fa-f](?:\s*(?:,|;|\/|&|\+|\band\b|\s)\s*[A-Fa-f])*\.?$/.test(lt) || /^[A-F]{2,6}$/.test(lt))
+    code = [...new Set(lt.toUpperCase().replace(/AND/g, ' ').replace(/[^A-F]/g, '').split('').map(x => L.indexOf(x)))].sort();
+  else if (/^[1-6](?:\s*(?:,|;|\/|&|\+|\band\b|\s)\s*[1-6])*$/.test(lt))
+    code = [...new Set(lt.replace(/[^1-6]/g, '').split('').map(x => +x - 1))].sort();
+  if (exact.length > 1) return {err: 'answer “' + ans + '” matches more than one choice'};
+  if (code && exact.length === 1 && !(code.length === 1 && code[0] === exact[0]))
+    return {err: 'answer “' + ans + '” is ambiguous (it is a choice\'s text and also a letter/number for another choice)'};
+  if (exact.length === 1) return {idx: exact, how: 'text'};
+  if (code){
+    const bad = code.filter(i => !valid(i));
+    if (bad.length) return {err: 'answer “' + ans + '” points to an empty or missing choice (' + bad.map(i => L[i] || '?').join(', ') + ')'};
+    return {idx: code, how: 'letter'};
+  }
+  // 4. full text, one correct choice per line (optionally "A) text"), or ;/| separated; exact → fuzzy ≥0.9 → unique substring
+  let parts = ans.split(/\r\n|\n|\r/).map(x => x.trim()).filter(Boolean);
+  if (parts.length === 1 && /[;|]/.test(ans)) {
+    const alt = ans.split(/[;|]/).map(x => x.trim()).filter(Boolean);
+    if (alt.every(p => nc.includes(norm(p.replace(/^([A-Fa-f1-6])[).:]\s+/, ''))))) parts = alt;
+  }
+  const out = [];
+  for (const line0 of parts){
+    let line = line0, pre = -1;
+    const m = /^([A-Fa-f1-6])[).:]\s+(.*)$/.exec(line);
+    if (m){ pre = /\d/.test(m[1]) ? +m[1] - 1 : L.indexOf(m[1].toUpperCase()); line = m[2]; }
+    const nl = norm(line);
+    let hit = -1;
+    const ex = nc.map((c, i) => c !== '' && c === nl ? i : -1).filter(i => i >= 0);
+    if (ex.length === 1) hit = ex[0];
+    else if (ex.length > 1) return {err: 'answer “' + line0 + '” matches more than one choice'};
+    else if (nl){
+      let best = -1, bestR = 0, tie = false;
+      nc.forEach((c, i) => { if (!c) return; const r = simRatio(c, nl); if (r > bestR + 1e-9){ bestR = r; best = i; tie = false; } else if (Math.abs(r - bestR) < 1e-9) tie = true; });
+      if (bestR >= 0.9 && !tie) hit = best;
+      else {
+        const sub = nc.map((c, i) => c && nl.length >= 3 && c.includes(nl) ? i : -1).filter(i => i >= 0);
+        if (sub.length === 1) hit = sub[0];
+      }
+    }
+    if (pre >= 0 && hit >= 0 && pre !== hit) return {err: 'answer “' + line0 + '”: the letter and the text point to different choices'};
+    if (hit < 0 && pre >= 0 && valid(pre) && !nl) hit = pre;
+    if (hit < 0 && pre >= 0 && valid(pre)) hit = pre;   // "C) …" whose text doesn't match: the explicit letter decides
+    if (hit < 0) return {err: 'answer “' + (line0.length > 60 ? line0.slice(0, 57) + '…' : line0) + '” doesn\'t match any choice'};
+    if (!out.includes(hit)) out.push(hit);
+  }
+  return out.length ? {idx: out.sort(), how: 'text'} : {err: 'no answer given'};
+}
+// Parse a CSV into a candidate set. opts.pairsAs: 'mc' | 'fill' (only for 2-column term/definition files).
+function importCSV(text, filename, opts){
+  opts = opts || {};
+  const rows = parseCSV(text);
+  const res = {name: String(filename || 'New set').replace(/\.(csv|tsv|txt)$/i, '').trim().slice(0, 80) || 'New set',
+    cards: [], skipped: [], mode: null, error: null, warnings: [], pairsDefault: null};
+  if (rows.unterminated) res.warnings.push('The file ends inside an unclosed quote ("). The last row may be incomplete.');
+  const nonEmpty = rows.map((r, i) => ({r, line: i + 1})).filter(x => x.r.some(c => String(c).trim() !== ''));
+  if (!nonEmpty.length){ res.error = 'The file is empty.'; return res; }
+  const head = nonEmpty[0].r.map(hk);
+  let qCol = -1, aCol = -1, atCol = -1, tCol = -1, dCol = -1; const cCols = {};
+  head.forEach((h, i) => {
+    if (qCol < 0 && Q_HEADERS.includes(h)) qCol = i;
+    else if (aCol < 0 && A_HEADERS.includes(h)) aCol = i;
+    else if (atCol < 0 && AT_HEADERS.includes(h)) atCol = i;
+    else if (tCol < 0 && TERM_HEADERS.includes(h)) tCol = i;
+    else if (dCol < 0 && DEF_HEADERS.includes(h)) dCol = i;
+    else { const ci = choiceIndex(h); if (ci >= 0 && cCols[ci] === undefined) cCols[ci] = i; }
+  });
+  const choiceCols = Object.keys(cCols).map(Number).sort((a, b) => a - b).map(k => cCols[k]);
+  const width = Math.max.apply(null, nonEmpty.map(x => x.r.filter(c => String(c).trim() !== '').length ? x.r.length : 0));
+  let pairs = null, body = nonEmpty.slice(1);
+  if (qCol >= 0 && choiceCols.length >= 1){ res.mode = 'mc'; }
+  else if (tCol >= 0 && dCol >= 0){ pairs = [tCol, dCol]; res.pairsDefault = 'mc'; }
+  else if (qCol >= 0 && aCol >= 0){ pairs = [qCol, aCol]; res.pairsDefault = 'fill'; }
+  else if (width <= 2 || nonEmpty.every(x => x.r.slice(2).every(c => String(c).trim() === ''))){
+    pairs = [0, 1]; res.pairsDefault = 'mc'; body = nonEmpty;   // headerless Quizlet-style export
+  } else {
+    res.error = 'Couldn\'t find a header row. Use Question,A,B,C,D,Answer (2–6 choice columns) or a 2-column Term,Definition file.';
+    return res;
+  }
+  if (choiceCols.length > 6){ res.error = 'Too many choice columns (max 6).'; return res; }
+  const seen = new Map();
+  const skip = (line, why) => res.skipped.push({row: line, reason: why});
+  const cell = (r, i) => i >= 0 && i < r.length ? String(r[i]).trim() : '';
+  if (pairs){
+    res.mode = 'pairs';
+    const as = opts.pairsAs || res.pairsDefault;
+    res.pairsAs = as;
+    const items = [];
+    body.forEach(({r, line}) => {
+      const t = cell(r, pairs[0]), d = cell(r, pairs[1]);
+      if (!t && !d) return;
+      if (!t) return skip(line, (res.pairsDefault === 'fill' ? 'question' : 'term') + ' is empty');
+      if (!d) return skip(line, (res.pairsDefault === 'fill' ? 'answer' : 'definition') + ' is empty');
+      const k = norm(t) + '\u0001' + norm(d);
+      if (seen.has(k)) return skip(line, 'duplicate of row ' + seen.get(k));
+      seen.set(k, line); items.push({t, d});
+    });
+    const defs = [], dn = new Set();
+    items.forEach(it => { const k = norm(it.d); if (!dn.has(k)){ dn.add(k); defs.push(it.d); } });
+    items.forEach(it => {
+      const others = defs.filter(x => norm(x) !== norm(it.d));
+      if (as === 'fill' || !others.length){ res.cards.push({q: it.t, c: [], a: it.d, type: 'fill'}); return; }
+      const opts4 = shuffle([it.d].concat(shuffle(others).slice(0, 3)));
+      res.cards.push({q: it.t, c: opts4, a: L[opts4.indexOf(it.d)], type: 'single'});
+    });
+    if (as !== 'fill' && items.length && defs.length < 2) res.warnings.push('Not enough different definitions to make multiple choice, so these became typed answers.');
+  } else {
+    body.forEach(({r, line}) => {
+      const q = cell(r, qCol);
+      const rawChoices = choiceCols.map(i => cell(r, i));
+      const rawAns = aCol >= 0 ? (r[aCol] == null ? '' : String(r[aCol])) : '';
+      if (!q && rawChoices.every(x => !x) && !rawAns.trim()) return;
+      if (!q) return skip(line, 'question is empty');
+      const filled = rawChoices.map((t, i) => t ? i : -1).filter(i => i >= 0);
+      const k = norm(q) + '\u0001' + filled.map(i => norm(rawChoices[i])).join('\u0002');
+      if (seen.has(k)) return skip(line, 'duplicate of row ' + seen.get(k));
+      if (!filled.length){
+        const typed = rawAns.trim() || cell(r, atCol);
+        if (!typed) return skip(line, 'no choices and no answer');
+        seen.set(k, line); res.cards.push({q, c: [], a: typed, type: 'fill'}); return;
+      }
+      if (filled.length === 1) return skip(line, 'only one choice (need at least 2, or none for a typed answer)');
+      let mr = matchAnswer(rawAns, rawChoices);
+      if (mr.err && !rawAns.trim() && cell(r, atCol)) mr = matchAnswer(cell(r, atCol), rawChoices);
+      if (mr.err) return skip(line, mr.err);
+      // compact the choices (drop empty columns) and re-letter the answer
+      const c = filled.map(i => rawChoices[i]);
+      const a = mr.idx.map(i => L[filled.indexOf(i)]).sort().join(',');
+      const tf = c.length === 2 && ['true','false'].includes(norm(c[0])) && ['true','false'].includes(norm(c[1])) && norm(c[0]) !== norm(c[1]);
+      seen.set(k, line);
+      res.cards.push({q, c, a, type: tf ? 'tf' : (mr.idx.length > 1 ? 'multi' : 'single')});
+    });
+  }
+  res.cards.forEach((c, i) => c.n = i + 1);
+  res.bytes = JSON.stringify(res.cards).length;
+  return res;
+}
+function newSetId(){ let id; do { id = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); } while (S.sets[id]); return id; }
+function addSet(name, cardsArr){
+  const id = newSetId();
+  S.sets[id] = Object.assign({id, name: String(name).trim().slice(0, 80) || 'New set', builtin: false, created: Date.now(),
+    cards: cardsArr.map(c => ({n: c.n, q: c.q, c: c.c, a: c.a, type: c.type}))}, blankProgress());
+  S.order.push(id);
+  S.active = id; S.tab = 'study'; widget = null; browseQ = '';
+  touch(); render(); window.scrollTo({top:0});
+  return id;
+}
+function stateKB(){ return Math.ceil(JSON.stringify(serialize()).length / 1024); }
+
+// ---------- upload dialog ----------
+function openImport(file){
+  const m = $('#modal');
+  let cur = null, text = null, fname = '';
+  const drawPick = (err) => {
+    m.innerHTML = '<h3>New set from CSV</h3>' +
+      '<div class="dropzone" id="dropzone"><div style="font-size:1.6rem">📄</div><div style="font-weight:600;margin:4px 0 10px">Drop a .csv file here</div>' +
+      '<button class="btn primary" id="pickFile">Choose CSV file…</button></div>' +
+      (err ? '<div class="feedback bad" id="importError" style="margin-bottom:10px">' + esc(err) + '</div>' : '') +
+      '<div class="fmt-help">Columns: <code>Question,A,B,C,D,Answer</code> (2–6 choices; headers like <code>Option A</code> or <code>Choice 1</code> work too). ' +
+      'Answer can be a letter (<code>B</code>), several letters for select-all (<code>A,C</code>), or the full text of the correct choice. ' +
+      'Leave the choices empty for a typed answer. A 2-column <code>Term,Definition</code> file (e.g. a Quizlet export) becomes multiple choice.</div>' +
+      '<div class="row right" style="margin-top:14px"><button class="btn" id="impCancel">Cancel</button></div>';
+    $('#impCancel').onclick = close;
+    $('#pickFile').onclick = () => { const fi = $('#fileIn'); fi.value = ''; fi.click(); };
+    const dz = $('#dropzone');
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  };
+  const drawSummary = () => {
+    const r = cur;
+    if (r.error){ drawPick(fname + ': ' + r.error); return; }
+    const types = {}; r.cards.forEach(c => { const k = c.type === 'fill' ? 'typed' : c.type === 'tf' ? 'true/false' : c.type === 'multi' ? 'select-all' : 'multiple choice'; types[k] = (types[k] || 0) + 1; });
+    const kb = Math.ceil(r.bytes / 1024), total = stateKB() + kb;
+    m.innerHTML = '<h3>Import summary</h3><div class="muted" style="font-size:.85rem;margin-bottom:8px">' + esc(fname) + '</div>' +
+      '<label style="font-size:.9rem;font-weight:600" for="setNameIn">Set name</label>' +
+      '<input class="fill-input" id="setNameIn" maxlength="80" value="' + esc(r.name) + '">' +
+      (r.mode === 'pairs' ? '<div class="row" style="margin-top:10px"><label class="muted" for="pairsAs" style="font-size:.9rem">2-column file →</label><select class="select" id="pairsAs">' +
+        '<option value="mc"' + (r.pairsAs === 'mc' ? ' selected' : '') + '>Multiple choice (definition + 3 others)</option><option value="fill"' + (r.pairsAs === 'fill' ? ' selected' : '') + '>Typed answer</option></select></div>' : '') +
+      '<div class="sync-note" id="importSummary"><div><span class="import-ok" id="impCount">✓ ' + r.cards.length + ' question' + (r.cards.length === 1 ? '' : 's') + ' imported</span>' +
+        (r.cards.length ? ' <span class="muted">(' + Object.keys(types).map(k => types[k] + ' ' + k).join(', ') + ')</span>' : '') + '</div>' +
+        '<div style="margin-top:4px"><span class="' + (r.skipped.length ? 'import-skip' : 'muted') + '" id="impSkipped">' + r.skipped.length + ' row' + (r.skipped.length === 1 ? '' : 's') + ' skipped</span></div>' +
+        (r.skipped.length ? '<ul class="skip-list" id="skipList">' + r.skipped.map(s => '<li>Row ' + s.row + ': ' + esc(s.reason) + '</li>').join('') + '</ul>' : '') +
+        r.warnings.map(w => '<div class="muted" style="margin-top:6px">⚠ ' + esc(w) + '</div>').join('') +
+        (Sync.active() ? '<div class="muted" style="margin-top:6px;font-size:.8rem" id="impSyncNote">Syncs with your progress (about ' + total + ' KB in total' +
+          (Sync.maxBytes && total * 1024 > Sync.maxBytes ? '; <b>over the server\'s ' + Math.round(Sync.maxBytes / 1024) + ' KB sync limit</b>, so it would stay on this device only' : '') + ').</div>' : '') +
+      '</div>' +
+      '<div class="row right" style="margin-top:14px"><button class="btn ghost" id="impOther">Choose another file</button><button class="btn" id="impCancel">Cancel</button>' +
+      '<button class="btn primary" id="impCreate"' + (r.cards.length ? '' : ' disabled') + '>Create set →</button></div>';
+    $('#impCancel').onclick = close;
+    $('#impOther').onclick = () => { drawPick(); $('#fileIn').value = ''; $('#fileIn').click(); };
+    const pa = $('#pairsAs'); if (pa) pa.onchange = () => { const nm = $('#setNameIn').value; cur = importCSV(text, fname, {pairsAs: pa.value}); cur.name = nm; drawSummary(); };
+    $('#impCreate').onclick = () => {
+      const nm = $('#setNameIn').value.trim(); if (!nm){ $('#setNameIn').focus(); return; }
+      close(); addSet(nm, r.cards); toast('Created “' + nm + '” · ' + r.cards.length + ' questions', 2600);
+    };
+  };
+  const close = () => { $('#overlay').classList.remove('show'); Importer.onFile = null; };
+  Importer.onFile = async (f) => {
+    fname = f.name || 'upload.csv';
+    if (f.size > 5 * 1024 * 1024){ drawPick(fname + ' is too large (max 5 MB).'); return; }
+    try { text = await f.text(); } catch(e){ drawPick('Could not read ' + fname + '.'); return; }
+    cur = importCSV(text, fname); drawSummary();
+  };
+  drawPick();
+  $('#overlay').classList.add('show');
+  if (file) Importer.onFile(file);
+}
+const Importer = {onFile: null};
+$('#fileIn').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f && Importer.onFile) Importer.onFile(f); });
+// drag-and-drop a CSV anywhere on the page
+function hasFiles(e){ return e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files'); }
+document.addEventListener('dragover', e => { if (hasFiles(e)){ e.preventDefault(); $('#sidebar').classList.add('drag'); } });
+document.addEventListener('dragleave', e => { if (!e.relatedTarget) $('#sidebar').classList.remove('drag'); });
+document.addEventListener('drop', e => {
+  if (!hasFiles(e)) return;
+  e.preventDefault(); $('#sidebar').classList.remove('drag');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (!f) return;
+  closeDrawer();
+  if (Importer.onFile && $('#overlay').classList.contains('show')) Importer.onFile(f); else openImport(f);
+});
 
 // ---------- cross-device sync (Supabase PostgREST RPC via plain fetch) ----------
 const SYNC_CODE_KEY = 'ethicsQuiz.syncCode';
@@ -435,7 +887,7 @@ const CODE_RE = /^[a-z0-9_-]{3,64}$/;
 const Sync = {
   code: SYNC_ENABLED ? (localStorage.getItem(SYNC_CODE_KEY) || '') : '',
   status: 'off', detail: '', lastOk: 0, timer: null, inflight: null, again: false,
-  retryTimer: null, retryDelay: 5000, initialPending: false, log: [],
+  retryTimer: null, retryDelay: 5000, initialPending: false, log: [], maxBytes: 0,
   note(m){ this.log.push(new Date().toISOString().slice(11,23) + ' ' + m); if (this.log.length > 60) this.log.shift(); },
   active(){ return SYNC_ENABLED && !!this.code; },
   schedule(){ if (!this.active()) return; clearTimeout(this.timer); setStatus('syncing'); this.timer = setTimeout(() => { this.timer = null; push(); }, 1500); },
@@ -474,6 +926,12 @@ async function rpc(fn, body, opts){
 }
 function onSyncError(e){
   if (e.offline){ setStatus('offline'); scheduleRetry(); }
+  else if (/too large/i.test(e.message)){
+    const m = /max (\d+)/.exec(e.message); if (m) Sync.maxBytes = +m[1];
+    const msg = 'Too much data to sync: ' + stateKB() + ' KB' + (m ? ' (server limit ' + Math.round(+m[1] / 1024) + ' KB)' : '') + '. Everything is still saved on this device; delete a set (or raise the server limit) to sync again.';
+    if (Sync.detail !== msg) toast('Sync paused: too much data for the server limit', 3500);
+    setStatus('error', msg);
+  }
   else setStatus('error', e.message);
 }
 function scheduleRetry(){
@@ -487,13 +945,30 @@ function parseTs(v){
   const ms = Date.parse(v); if (isNaN(ms)) return 0;
   const m = /\.(\d+)/.exec(String(v)); return (m && m[1].length > 3 && /[1-9]/.test(m[1].slice(3))) ? ms + 1 : ms;
 }
+// Merge rule for sets: progress is last-write-wins per whole state (as before), but an uploaded set that exists
+// only on this device is kept unless the remote state says it was deleted (tombstone). This protects a freshly
+// uploaded set from being wiped by another device that saved an older state, and lets an old single-deck
+// (legacy) state be adopted without losing this device's uploaded sets.
 function adoptRemote(state, ts){
   Sync.note('adopt remote ' + ts);
-  const f = fresh(); Object.keys(f).forEach(k => { if (state && k in state) f[k] = state[k]; });
-  f.tab = S.tab;                 // which tab is open stays per-device
+  const prevActive = S.active, prevTab = S.tab, local = S;
+  const f = migrate(state);
+  f.deleted = Object.assign({}, obj(local.deleted), f.deleted);
+  let changed = 0;
+  Object.keys(f.deleted).forEach(id => { if (id !== BUILTIN_ID && f.sets[id]){ delete f.sets[id]; changed++; } });  // deleted here, remote still has it
+  local.order.forEach(id => {
+    const s = local.sets[id];
+    if (!s || s.builtin || f.sets[id] || f.deleted[id]) return;
+    f.sets[id] = s; f.order.push(id); changed++;                                                                 // uploaded here, remote lacks it
+  });
+  f.order = f.order.filter(id => f.sets[id]);
+  f.tab = prevTab;                                        // which tab is open stays per-device
+  f.active = f.sets[prevActive] ? prevActive : BUILTIN_ID; // and so does the selected set
   f.updatedAt = ts;
   S = f; persist();
-  // Don't yank the screen away while the user is looking at feedback; Next will show the synced state.
+  if (changed){ Sync.note('merged ' + changed + ' set change(s); re-pushing'); setTimeout(() => touch(), 0); }
+  if (f.active !== prevActive){ widget = null; render(); return; }
+  // Don't yank the screen away while the user is looking at an answered question; Next will show the synced state.
   const nb = $('#nextBtn');
   if (S.tab === 'study' && !Sync.initialPending && nb && nb.style.display !== 'none'){ updateCount(); return; }
   render();
@@ -526,7 +1001,7 @@ async function push(depth, opts){
   setStatus('syncing');
   Sync.inflight = (async () => {
     try {
-      const rows = await rpc('save_progress', {p_code: Sync.code, p_state: S, p_updated_at: new Date(sentTs).toISOString()}, opts);
+      const rows = await rpc('save_progress', {p_code: Sync.code, p_state: serialize(), p_updated_at: new Date(sentTs).toISOString()}, opts);
       const row = rows && rows[0];
       Sync.retryDelay = 5000;
       if (row && row.applied === false){ Sync.inflight = null; if (depth < 3) await pull(depth + 1); return; }
@@ -548,7 +1023,12 @@ async function initialSync(){
   clearTimeout(guard);
   if (Sync.initialPending){ Sync.initialPending = false; render(); }
 }
-function summary(st){ const d = st && st.study; return d ? d.done.length + ' / ' + d.total + ' done' : 'no round started'; }
+function summary(st){
+  const m = migrate(st), ids = m.order.filter(id => m.sets[id]);
+  let done = 0, total = 0, started = 0;
+  ids.forEach(id => { const d = m.sets[id].study; if (d){ started++; done += d.done.length; total += d.total; } });
+  return ids.length + ' set' + (ids.length === 1 ? '' : 's') + ' · ' + (started ? done + ' / ' + total + ' done' : 'no round started');
+}
 // Connect (or change) the sync code. If both this device and the cloud already have progress, let the user choose.
 async function connectCode(code){
   clearTimeout(Sync.timer); Sync.timer = null; clearTimeout(Sync.retryTimer);
@@ -565,13 +1045,13 @@ function openSync(){
   const m = $('#modal');
   const draw = (conflictRow) => {
     m.innerHTML = '<h3>Sync across devices</h3>' +
-      '<p class="muted" style="margin:0 0 8px;font-size:.92rem">Enter the same sync code on each device. No account needed; progress, stars, edited answers and stats are synced.</p>' +
+      '<p class="muted" style="margin:0 0 8px;font-size:.92rem">Enter the same sync code on each device. No account needed; your sets, progress, stars, edited answers and stats are synced.</p>' +
       '<div class="sync-note"><b>Your sync code works like a password.</b> Anyone who knows it can see and change your progress, so pick something hard to guess (e.g. <code>thomas-ethics-7k3p</code>).</div>' +
       '<label style="font-size:.9rem;font-weight:600" for="syncCodeIn">Sync code</label>' +
       '<input class="fill-input" id="syncCodeIn" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="e.g. thomas-ethics-7k3p" value="' + esc(Sync.code) + '">' +
       '<div class="muted" style="font-size:.8rem;margin-top:4px">3–64 characters: lowercase letters, digits, - or _</div>' +
       (conflictRow ? '<div class="choice-box" id="syncConflict"><b>Both this device and the cloud already have progress for this code.</b>' +
-        '<div style="font-size:.9rem">Cloud: ' + esc(summary(conflictRow.state)) + ' · saved ' + esc(new Date(conflictRow.updated_at).toLocaleString()) + '<br>This device: ' + esc(summary(S)) + ' · saved ' + esc(new Date(S.updatedAt).toLocaleString()) + '</div>' +
+        '<div style="font-size:.9rem">Cloud: ' + esc(summary(conflictRow.state)) + ' · saved ' + esc(new Date(conflictRow.updated_at).toLocaleString()) + '<br>This device: ' + esc(summary(serialize())) + ' · saved ' + esc(new Date(S.updatedAt).toLocaleString()) + '</div>' +
         '<div class="row"><button class="btn primary" id="useCloud">Use cloud progress</button><button class="btn" id="useLocal">Keep this device\'s (overwrite cloud)</button></div></div>' : '') +
       '<div class="sync-status muted" id="syncModalStatus">' + esc(statusLine()) + '</div>' +
       '<div class="row right" style="margin-top:14px">' +
@@ -604,38 +1084,49 @@ window.addEventListener('offline', () => { if (Sync.active()) setStatus('offline
 // ---------- export ----------
 function csvCell(s){ s = String(s == null ? '' : s); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
 function buildCSV(){
-  const rows = [['Question','A','B','C','D','Answer','AnswerText','Edited']];
-  DECK.forEach(c => rows.push([c.q, c.c[0], c.c[1], c.c[2], c.c[3], isFill(c) ? '' : ans(c), isEdited(c) ? answerText(c).replace(/^[A-D]\. /gm, '') : c.at, isEdited(c) ? 'yes' : 'no']));
+  const P = cs(), all = cards();
+  const nChoices = P.builtin ? 4 : Math.max(2, ...all.map(c => c.c.length));
+  const rows = [['Question'].concat(L.slice(0, nChoices), ['Answer','AnswerText','Edited'])];
+  all.forEach(c => {
+    const at = P.builtin && !isEdited(c) ? c.at : answerText(c).replace(/^[A-F]\. /gm, '');
+    rows.push([c.q].concat(L.slice(0, nChoices).map((_, i) => c.c[i] || ''), [isFill(c) ? '' : ans(c), at, isEdited(c) ? 'yes' : 'no']));
+  });
   return rows.map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
-window.__ethicsQuiz = {buildCSV: buildCSV, deck: DECK, state: () => S};
+window.__ethicsQuiz = {buildCSV, deck: DECK, state: () => S, serialize, migrate, parseCSV, importCSV, matchAnswer, simRatio, switchSet, addSet, last: null};
 $('#exportBtn').addEventListener('click', () => {
+  const P = cs();
   const blob = new Blob(['\ufeff' + buildCSV()], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ethics_quiz_export.csv';
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = P.builtin ? 'ethics_quiz_export.csv' : (P.name.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'set') + '_export.csv';
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-  toast('CSV exported (' + Object.keys(S.edits).length + ' edited answers)');
+  toast('CSV exported (' + Object.keys(P.edits).length + ' edited answers)');
 });
 $('#resetBtn').addEventListener('click', () => {
-  if (!confirm('Reset all progress (stars, missed, stats, current round)? Your edited answers are kept.')) return;
-  const edits = S.edits; S = fresh(); S.edits = edits; touch(); render(); toast('Progress reset');
+  const P = cs();
+  if (!confirm('Reset progress for “' + P.name + '” (stars, missed, stats, current round)? Your edited answers and other sets are kept.')) return;
+  Object.assign(P, blankProgress(), {edits: P.edits}); widget = null; touch(); render(); toast('Progress reset');
 });
 
 // ---------- events ----------
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
 $('#filterSel').addEventListener('change', e => {
-  const prev = S.filter; S.filter = e.target.value;
-  if (S.tab === 'study' && S.study && S.study.done.length && !confirm('Start a new round with this card filter? Current round progress will be cleared.')){ S.filter = prev; e.target.value = prev; return; }
-  S.study = null; touch(); render();
+  const P = cs(), prev = P.filter; P.filter = e.target.value;
+  if (S.tab === 'study' && P.study && P.study.done.length && !confirm('Start a new round with this card filter? Current round progress will be cleared.')){ P.filter = prev; e.target.value = prev; return; }
+  P.study = null; touch(); render();
 });
 document.addEventListener('keydown', e => {
   if ($('#overlay').classList.contains('show')){ if (e.key === 'Escape') $('#overlay').classList.remove('show'); return; }
+  if (e.key === 'Escape' && $('#sidebar').classList.contains('open')){ closeDrawer(); return; }
   const tag = (e.target.tagName || '').toLowerCase();
-  if (tag === 'input' || tag === 'select') return;
+  if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+  if (e.target.closest && e.target.closest('#sidebar')) return;
   if (e.metaKey || e.ctrlKey || e.altKey || S.tab !== 'study') return;
   if (widget && widget.key(e.key)){ e.preventDefault(); return; }
   const nb = $('#nextBtn');
   if ((e.key === 'Enter' || e.key === 'ArrowRight') && nb && nb.style.display !== 'none' && document.activeElement !== nb){ e.preventDefault(); nb.click(); }
 });
+window.matchMedia('(min-width: 761px)').addEventListener('change', ev => { if (ev.matches) closeDrawer(); });
 setStatus(Sync.active() ? 'syncing' : 'off');
 render();
 initialSync();
