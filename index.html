@@ -209,8 +209,59 @@ button.brand[aria-expanded="true"]{background:var(--panel);border-color:var(--ac
 }
 @media (min-width:2200px){
   html{font-size:20px}
-  .wrap{max-width:1900px}
   .modal{max-width:760px}
+}
+/* ---- desktop (>760px): use the whole window. No max-width cap; the filter sits on the tabs row;
+   in Study the card stretches to the bottom of the viewport and the question/choices scale with it. ---- */
+.qfoot{margin-top:14px}
+.qfoot .kbd-in{display:none}
+@media (min-width:761px){
+  .wrap{max-width:none;padding:12px 20px calc(16px + env(safe-area-inset-bottom))}
+  header.top{margin-bottom:8px}
+  .maincol{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:center}
+  .maincol > .tabs{grid-column:1;margin-bottom:10px}
+  .maincol > .toolbar{grid-column:2;margin-bottom:10px;flex-wrap:nowrap}
+  .maincol > #view{grid-column:1 / -1;align-self:stretch;min-width:0}
+  .toolbar .select{padding:7px 10px}
+  .tab{padding:9px 12px}
+  #view > .kbd{display:none}
+  .qfoot{display:flex;align-items:center;gap:12px;margin-top:0;padding-top:12px;min-height:calc(1.45rem + 34px)}
+  .qfoot .kbd-in{display:block;margin:0;text-align:left;flex:1;min-width:0}
+  .qfoot .next-btn{padding:10px 22px;font-size:1rem}
+  /* text scales with the window (width and height); the fit levels step it down when a card would overflow */
+  .qtext{font-size:clamp(1.25rem, 1.1rem + min(.9vw, 1.6vh), 2.2rem);line-height:1.3}
+  .opt{font-size:clamp(1rem, .85rem + min(.45vw, .8vh), 1.6rem);padding:clamp(10px, .2rem + min(.55vw, 1vh), 26px) clamp(14px, .4rem + .8vw, 34px);gap:.8em;align-items:center;border-radius:clamp(14px, .4rem + .4vw, 20px)}
+  .letter{width:1.7em;height:1.7em;font-size:.8em;border-radius:.45em}
+  .opts{gap:clamp(10px, .2rem + .5vw, 18px)}
+  .opts.tf .opt{font-size:clamp(1.05rem, .9rem + .6vw, 1.9rem)}
+  .fill-input{font-size:clamp(1.05rem, .9rem + .5vw, 1.6rem);padding:.7em .9em}
+  #study .feedback{font-size:clamp(.95rem, .85rem + .3vw, 1.3rem)}
+  .qhead .done-count{font-size:1.05rem}
+  #study .progress{margin:6px 0 clamp(12px, .5vw + 6px, 20px)}
+  #study #qbox .meta + .qtext{margin-top:clamp(8px, .6vw, 14px) !important}
+  body.study-fs #study{padding:clamp(14px, 2.2vh, 30px) clamp(18px, 1.8vw, 36px)}
+  /* fit levels (set by fitStudy() when the card would overflow): one or two steps smaller; anything taller scrolls inside the card */
+  #study[data-fit="1"] .qtext{font-size:clamp(1.12rem, 1rem + min(.6vw, 1.05vh), 1.8rem)}
+  #study[data-fit="1"] .opt{font-size:clamp(.95rem, .8rem + min(.35vw, .6vh), 1.35rem);padding-top:clamp(8px, .7vh, 18px);padding-bottom:clamp(8px, .7vh, 18px)}
+  #study[data-fit="2"] .qtext{font-size:clamp(1.05rem, .95rem + min(.35vw, .6vh), 1.45rem)}
+  #study[data-fit="2"] .opt{font-size:clamp(.92rem, .8rem + min(.2vw, .35vh), 1.12rem);padding-top:7px;padding-bottom:7px}
+  #study[data-fit="2"] #qbox > .opts{margin-top:10px;gap:8px}
+}
+@media (min-width:761px) and (min-height:540px){
+  body.study-fs .wrap{height:100vh;height:100dvh;display:flex;flex-direction:column}
+  body.study-fs header.top{flex:none}
+  body.study-fs .layout{flex:1;min-height:0;display:flex;flex-direction:column}
+  body.study-fs .maincol{flex:1;min-height:0;grid-template-rows:auto minmax(0,1fr)}
+  body.study-fs #view{display:flex;flex-direction:column;min-height:0;height:100%}
+  body.study-fs #view > .panel{flex:1;min-height:0;overflow:auto}
+  body.study-fs #study{display:flex;flex-direction:column;overflow:hidden}
+  body.study-fs #study > .qhead, body.study-fs #study > .progress, body.study-fs #study > .qfoot{flex:none}
+  /* the question area takes the rest of the height; choices grow to fill it (up to a cap) and it scrolls if it can't fit */
+  body.study-fs #qbox{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;overscroll-behavior:contain;margin:0 -6px;padding:0 6px}
+  body.study-fs #qbox > .opts{flex:1 0 auto;margin:clamp(14px, .9vw + 4px, 26px) 0 4px}
+  body.study-fs #qbox > .opts > .opt{flex:1 1 auto;max-height:max(4.2em, 19vh)}
+  body.study-fs #qbox > .opts.tf > .opt{max-height:max(4.2em, 30vh)}
+  body.study-fs #view > .panel.empty{flex:none}
 }
 @media (max-width:760px){
   .sidebar{width:min(85vw,320px)}
@@ -388,6 +439,7 @@ function updateCount(){
 function render(){
   autoCancel();
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
+  document.body.classList.toggle('study-fs', S.tab !== 'browse');
   $('#filterSel').value = cs().filter;
   updateCount();
   const v = $('#view'); v.innerHTML = '';
@@ -528,14 +580,15 @@ function renderStudy(v){
   const n = R.queue[0], c = byN(n);
   if (!c){ R.queue.shift(); persist(); render(); return; }
   const pct = 100 * R.done.length / R.total;
+  const hint = isFill(c) ? '<kbd>Enter</kbd> check / next' : '<kbd>1</kbd>–<kbd>' + optIdx(c).length + '</kbd> or <kbd>A</kbd>–<kbd>' + L[optIdx(c).length - 1] + '</kbd> to answer · <kbd>Enter</kbd> check / next';
   v.innerHTML = '<div class="panel" id="study"><div class="qhead"><span class="done-count" id="doneCount">' + R.done.length + ' / ' + R.total + ' done</span>' +
     '<span class="row"><span class="muted" style="font-size:.88rem" id="mistakes">' + R.wrong + ' mistake' + (R.wrong === 1 ? '' : 's') + ' · ' + R.queue.length + ' left</span>' +
     '<label class="auto-toggle" title="Go to the next question automatically (' + AUTO_NEXT_MS.correct / 1000 + ' s after a right answer, ' + AUTO_NEXT_MS.wrong / 1000 + ' s after a wrong one)"><input type="checkbox" id="autoChk"' + (Auto.on ? ' checked' : '') + '>Auto-next</label>' +
     '<button class="btn small ghost" id="restartRound">Restart</button></span></div>' +
     '<div class="progress"><i id="progressBar" style="width:' + pct + '%"></i></div>' +
     '<div id="qbox" data-n="' + n + '"></div>' +
-    '<div class="row right" style="margin-top:14px"><button class="btn primary next-btn" id="nextBtn" style="display:none" data-auto="off"><span class="nb-label">Next →</span><span class="auto-fill" aria-hidden="true"></span></button></div></div>' +
-    '<div class="kbd hide-sm">' + (isFill(c) ? '<kbd>Enter</kbd> check / next' : '<kbd>1</kbd>–<kbd>' + optIdx(c).length + '</kbd> or <kbd>A</kbd>–<kbd>' + L[optIdx(c).length - 1] + '</kbd> to answer · <kbd>Enter</kbd> check / next') + '</div>';
+    '<div class="row right qfoot"><div class="kbd kbd-in">' + hint + '</div><button class="btn primary next-btn" id="nextBtn" style="display:none" data-auto="off"><span class="nb-label">Next →</span><span class="auto-fill" aria-hidden="true"></span></button></div></div>' +
+    '<div class="kbd hide-sm">' + hint + '</div>';
   let advanced = false, pendingMs = 0;
   const advance = () => { if (advanced) return; advanced = true; autoCancel(); render(); window.scrollTo({top:0}); };
   widget = questionWidget($('#qbox'), c, {again: R.wrongOnce.includes(n)}, (correct, d) => {
@@ -580,6 +633,7 @@ function renderStudy(v){
     }
   });
   $('#nextBtn').addEventListener('click', advance);
+  fitStudy();
   $('#autoChk').addEventListener('change', e => {
     Auto.on = e.target.checked;
     try { localStorage.setItem(AUTO_KEY, Auto.on ? 'on' : 'off'); } catch(err){}
@@ -590,6 +644,16 @@ function renderStudy(v){
   });
   $('#restartRound').addEventListener('click', () => { if (R.done.length === 0 || confirm('Restart this round? Progress in the current round will be cleared.')){ cs().study = null; touch(); render(); } });
 }
+// Desktop full-screen study: if the question + choices don't fit the card, step the text down (max two steps).
+const mqFS = matchMedia('(min-width:761px) and (min-height:540px)');
+function fitStudy(){
+  const st = $('#study'), qb = $('#qbox'); if (!st || !qb) return;
+  delete st.dataset.fit;
+  if (!mqFS.matches) return;
+  for (let lvl = 1; lvl <= 2 && qb.scrollHeight > qb.clientHeight + 1; lvl++) st.dataset.fit = String(lvl);
+}
+let fitRaf = 0;
+window.addEventListener('resize', () => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fitStudy); });
 function renderFinish(v){
   const R = cs().study;
   const firstTry = R.total - R.wrongOnce.length;
