@@ -225,7 +225,7 @@ button.brand:hover .brand-glyph{color:var(--accent);background:var(--accent-soft
 <body>
 <div class="wrap">
   <header class="top">
-    <button class="brand" id="brandBtn" type="button" aria-controls="sidebar" aria-expanded="true" title="Show / hide sets"><span class="logo" aria-hidden="true">⚖︎</span><span class="brand-glyph" aria-hidden="true">☰</span><span class="brand-text"><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></span></button>
+    <button class="brand" id="brandBtn" type="button" aria-controls="sidebar" aria-expanded="true" title="Show / hide sets"><span class="logo" aria-hidden="true">⚖︎</span><span class="brand-text"><span id="brandName">Computer Ethics</span><small id="subtitle">Study deck</small></span></button>
     <div class="spacer"></div>
     <button class="btn small sync-btn" id="syncBtn" hidden title="Cross-device sync"><span class="dot"></span><span id="syncLabel">Sync</span></button>
     <button class="btn small" id="exportBtn" title="Download this set as CSV (includes your edited answers)">⬇ <span class="hide-sm">Export</span> CSV</button>
@@ -675,7 +675,7 @@ function syncBrandAria(){
   const shown = sidebarShown(), b = $('#brandBtn');
   b.setAttribute('aria-expanded', String(shown));
   b.title = (shown ? 'Hide' : 'Show') + ' sets';
-  $('.brand-glyph').textContent = mqMobile.matches ? '☰' : (shown ? '‹' : '☰');
+
 }
 function applyCollapsed(){ document.body.classList.toggle('sb-collapsed', sbCollapsed); syncBrandAria(); }
 function openDrawer(){ $('#sidebar').classList.add('open'); $('#backdrop').classList.add('show'); syncBrandAria(); }
